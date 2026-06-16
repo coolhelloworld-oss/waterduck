@@ -25,7 +25,6 @@ static void on_path_attribute(URL::URL const&, ParsedCookie& parsed_cookie, Stri
 static void on_secure_attribute(ParsedCookie& parsed_cookie);
 static void on_http_only_attribute(ParsedCookie& parsed_cookie);
 static void on_same_site_attribute(ParsedCookie& parsed_cookie, StringView attribute_value);
-static Optional<UnixDateTime> parse_date_time(StringView date_string);
 
 bool cookie_contains_invalid_control_character(StringView cookie_string)
 {
@@ -189,7 +188,7 @@ ErrorOr<void> process_attribute(URL::URL const& url, ParsedCookie& parsed_cookie
 void on_expires_attribute(ParsedCookie& parsed_cookie, StringView attribute_value)
 {
     // 1. Let the expiry-time be the result of parsing the attribute-value as cookie-date (see Section 5.1.1).
-    auto expiry_time = parse_date_time(attribute_value);
+    auto expiry_time = parse_cookie_date(attribute_value);
 
     // 2. If the attribute-value failed to parse as a cookie date, ignore the cookie-av.
     if (!expiry_time.has_value())
@@ -269,7 +268,11 @@ ErrorOr<void> on_domain_attribute(ParsedCookie& parsed_cookie, StringView attrib
     auto cookie_domain = attribute_value;
 
     // 2. If cookie-domain starts with %x2E ("."), let cookie-domain be cookie-domain without its leading %x2E (".").
-    if (cookie_domain.starts_with('.'))
+    // NB: We deliberately keep a lone "." rather than reducing it to "". By the letter of the spec this would
+    //     become an empty domain and be stored as a host cookie, but Chromium, Firefox, WPT (and the spec intent)
+    //     treat an treat `Domain=.` as an invalid domain.
+    //     See: https://github.com/httpwg/http-extensions/issues/1939
+    if (cookie_domain.length() > 1 && cookie_domain.starts_with('.'))
         cookie_domain = cookie_domain.substring_view(1);
 
     // 3. Convert the cookie-domain to lower case.
@@ -330,7 +333,7 @@ void on_same_site_attribute(ParsedCookie& parsed_cookie, StringView attribute_va
 }
 
 // https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-22#section-5.1.1
-Optional<UnixDateTime> parse_date_time(StringView date_string)
+Optional<UnixDateTime> parse_cookie_date(StringView date_string)
 {
     // https://tools.ietf.org/html/rfc6265#section-5.1.1
     unsigned hour = 0;

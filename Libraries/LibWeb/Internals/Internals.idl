@@ -70,6 +70,7 @@ interface Internals {
     undefined simulateDrop(double x, double y);
 
     undefined expireCookiesWithTimeOffset(long long seconds);
+    Promise<undefined> deleteAllCookies();
 
     boolean setHttpMemoryCacheEnabled(boolean enabled);
     undefined setContentBlockers(DOMString patterns);
@@ -96,6 +97,12 @@ interface Internals {
     DOMString dumpStackingContextTree();
     DOMString dumpGCGraph();
     DOMString dumpSessionHistory();
+    DOMString dumpUIProcessSessionHistory();
+    Promise<undefined> flushSessionHistoryTraversalQueue();
+
+    // Test-only: deterministically reproduce the navigation-vs-traversal race in Navigable::begin_navigation by
+    // re-stamping the next navigation's ongoing navigation with a traversal during its unload check.
+    undefined clobberNextNavigationWithATraversal();
 
     // Returns the shadow root of the element, if it has one, even if it's not normally accessible to JS.
     ShadowRoot? getShadowRoot(Element element);

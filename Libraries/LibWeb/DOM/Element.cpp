@@ -1052,7 +1052,6 @@ CSS::RequiredInvalidationAfterStyleChange Element::recompute_style(bool& did_cha
     m_style_uses_inherit_css_function = false;
     m_style_depends_on_size_container_query = false;
     m_affected_by_has_pseudo_class_in_subject_position = false;
-    m_affected_by_has_pseudo_class_in_non_subject_position = false;
     m_affected_by_has_pseudo_class_with_relative_selector_that_has_sibling_combinator = false;
     m_affected_by_direct_sibling_combinator = false;
     m_affected_by_indirect_sibling_combinator = false;
@@ -1493,6 +1492,14 @@ void Element::set_shadow_root(GC::Ptr<ShadowRoot> shadow_root)
     if (m_shadow_root) {
         m_shadow_root->set_host(nullptr);
         m_shadow_root->set_is_connected(false);
+        // NB: We don't need to run the removed steps if the children have already been disconnected (or were never
+        //     connected in the first place)
+        if (is_connected()) {
+            m_shadow_root->for_each_shadow_including_descendant([&](DOM::Node& descendant) {
+                descendant.removed_from(IsSubtreeRoot::No, m_shadow_root, *m_shadow_root);
+                return TraversalDecision::Continue;
+            });
+        }
     }
     m_shadow_root = move(shadow_root);
     if (m_shadow_root) {
@@ -1632,7 +1639,7 @@ static Vector<CSSPixelRect> compute_client_rects_assuming_layout_clean(Element c
     Vector<CSSPixelRect> rects;
     if (auto paintable_box = element.paintable_box()) {
         auto absolute_rect = paintable_box->absolute_border_box_rect();
-        rects.append(paintable_box->transform_rect_to_viewport(absolute_rect));
+        rects.append(paintable_box->transform_rect_to_viewport(absolute_rect, Painting::AccumulatedVisualContextTree::IncludeVisualViewportTransform::No));
     } else if (element.paintable()) {
         dbgln("FIXME: Failed to get client rects for element ({})", element.debug_description());
     }
@@ -2478,13 +2485,19 @@ bool Element::is_actually_disabled() const
         return !form_associated_element.enabled();
     }
 
-    // - an optgroup element that has a disabled attribute
-    if (is<HTML::HTMLOptGroupElement>(this))
-        return has_attribute(HTML::AttributeNames::disabled);
+    auto nearest_ancestor_select_is_disabled = [this] {
+        if (auto select = HTML::get_nearest_ancestor_select(*this))
+            return select->has_attribute(HTML::AttributeNames::disabled);
+        return false;
+    };
 
-    // - an option element that is disabled
-    if (is<HTML::HTMLOptionElement>(this))
-        return static_cast<HTML::HTMLOptionElement const&>(*this).disabled();
+    // - an optgroup element that has a disabled attribute or whose nearest ancestor select is disabled
+    if (is<HTML::HTMLOptGroupElement>(this))
+        return has_attribute(HTML::AttributeNames::disabled) || nearest_ancestor_select_is_disabled();
+
+    // - an option element that is disabled or whose nearest ancestor select is disabled
+    if (auto* option = as_if<HTML::HTMLOptionElement>(this))
+        return option->disabled() || nearest_ancestor_select_is_disabled();
 
     // - a fieldset element that is a disabled fieldset
     if (is<HTML::HTMLFieldSetElement>(this))

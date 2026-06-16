@@ -82,6 +82,7 @@ public:
     void simulate_drop(double x, double y);
 
     void expire_cookies_with_time_offset(WebIDL::LongLong seconds);
+    GC::Ref<WebIDL::Promise> delete_all_cookies();
 
     bool set_http_memory_cache_enabled(bool enabled);
     WebIDL::ExceptionOr<void> set_content_blockers(String const& patterns);
@@ -110,6 +111,9 @@ public:
     String dump_stacking_context_tree();
     String dump_gc_graph();
     String dump_session_history();
+    String dump_ui_process_session_history();
+    GC::Ref<WebIDL::Promise> flush_session_history_traversal_queue();
+    void clobber_next_navigation_with_a_traversal();
 
     GC::Ptr<DOM::ShadowRoot> get_shadow_root(GC::Ref<DOM::Element>);
 

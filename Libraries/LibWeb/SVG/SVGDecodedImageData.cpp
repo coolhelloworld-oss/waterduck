@@ -59,6 +59,7 @@ ErrorOr<GC::Ref<SVGDecodedImageData>> SVGDecodedImageData::create(JS::Realm& rea
         origin,
         navigable->heap().allocate<HTML::PolicyContainer>(realm.heap()),
         HTML::SandboxingFlagSet {},
+        ReferrerPolicy::ReferrerPolicy::EmptyString,
         HTML::OpenerPolicy {},
         OptionalNone {},
         HTML::UserNavigationInvolvement::None);
@@ -303,11 +304,6 @@ void SVGDecodedImageData::SVGPageClient::visit_edges(Visitor& visitor)
 Optional<Gfx::IntRect> SVGDecodedImageData::frame_rect(size_t) const
 {
     return {};
-}
-
-RefPtr<Gfx::PaintingSurface> SVGDecodedImageData::surface(size_t, Gfx::IntSize size) const
-{
-    return render_to_surface(size);
 }
 
 void SVGDecodedImageData::paint(DisplayListRecordingContext& context, size_t, Gfx::IntRect dst_rect, Gfx::ScalingMode) const

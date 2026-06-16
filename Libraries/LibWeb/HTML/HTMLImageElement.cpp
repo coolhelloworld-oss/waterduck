@@ -310,51 +310,6 @@ void HTMLImageElement::adjust_computed_style(CSS::ComputedProperties& style)
         style.set_property(CSS::PropertyID::Display, CSS::DisplayStyleValue::create(CSS::Display::from_short(CSS::Display::Short::None)));
 }
 
-Optional<Gfx::DecodedImageFrame> HTMLImageElement::default_image_frame_sized(Gfx::IntSize size) const
-{
-    if (auto data = m_current_request->image_data())
-        return data->frame(0, size);
-    return {};
-}
-
-bool HTMLImageElement::is_image_available() const
-{
-    return m_current_request && m_current_request->is_available();
-}
-
-Optional<CSSPixels> HTMLImageElement::intrinsic_width() const
-{
-    if (auto image_data = m_current_request->image_data())
-        return image_data->intrinsic_width();
-    return {};
-}
-
-Optional<CSSPixels> HTMLImageElement::intrinsic_height() const
-{
-    if (auto image_data = m_current_request->image_data())
-        return image_data->intrinsic_height();
-    return {};
-}
-
-Optional<CSSPixelFraction> HTMLImageElement::intrinsic_aspect_ratio() const
-{
-    if (auto image_data = m_current_request->image_data())
-        return image_data->intrinsic_aspect_ratio();
-    return {};
-}
-
-Optional<Gfx::DecodedImageFrame> HTMLImageElement::current_image_frame_sized(Gfx::IntSize size) const
-{
-    if (auto data = m_current_request->image_data())
-        return data->frame(m_current_frame_index, size);
-    return {};
-}
-
-void HTMLImageElement::set_visible_in_viewport(bool)
-{
-    // FIXME: Loosen grip on image data when it's not visible, e.g via volatile memory.
-}
-
 // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-img-width
 WebIDL::UnsignedLong HTMLImageElement::width() const
 {
@@ -420,25 +375,27 @@ void HTMLImageElement::set_height(WebIDL::UnsignedLong height)
 // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-img-naturalwidth
 unsigned HTMLImageElement::natural_width() const
 {
-    // Return the density-corrected intrinsic width of the image, in CSS pixels,
-    // if the image has intrinsic dimensions and is available.
-    if (auto bitmap = current_image_frame(); bitmap.has_value())
-        return bitmap->width();
+    // 1. If the image is not available, then return 0.
+    auto bitmap = current_image_frame();
+    if (!bitmap.has_value())
+        return 0;
 
-    // ...or else 0.
-    return 0;
+    // 2. Return the respective component of the image's density-corrected natural width and height, in CSS pixels. [CSS]
+    // FIXME: Implement density-corrected algorithm.
+    return bitmap->width();
 }
 
 // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-img-naturalheight
 unsigned HTMLImageElement::natural_height() const
 {
-    // Return the density-corrected intrinsic height of the image, in CSS pixels,
-    // if the image has intrinsic dimensions and is available.
-    if (auto bitmap = current_image_frame(); bitmap.has_value())
-        return bitmap->height();
+    // 1. If the image is not available, then return 0.
+    auto bitmap = current_image_frame();
+    if (!bitmap.has_value())
+        return 0;
 
-    // ...or else 0.
-    return 0;
+    // 2. Return the respective component of the image's density-corrected natural width and height, in CSS pixels. [CSS]
+    // FIXME: Implement density-corrected algorithm.
+    return bitmap->height();
 }
 
 // https://drafts.csswg.org/cssom-view/#dom-htmlimageelement-x
@@ -878,17 +835,21 @@ after_step_7:
         if (m_pending_request && url_string == m_pending_request->current_url())
             return;
 
-        // 15. If urlString is the same as the current request's current URL and the current request's state is partially available,
-        //     then abort the image request for the pending request,
-        //     queue an element task on the DOM manipulation task source given the img element
-        //     to restart the animation if restart animation is set, and return.
+        // 15. If urlString is the same as the current request's current URL and the current request's state is
+        //     partially available:
         if (url_string == m_current_request->current_url() && m_current_request->state() == ImageRequest::State::PartiallyAvailable) {
+            // 1. Abort the image request for the pending request.
             abort_the_image_request(realm(), m_pending_request);
+
+            // 2. If restart animation is set, then queue an element task on the DOM manipulation task source given the
+            //    img element to restart the animation.
             if (restart_animations) {
                 queue_an_element_task(HTML::Task::Source::DOMManipulation, [this] {
                     restart_the_animation();
                 });
             }
+
+            // 3. Return.
             return;
         }
 

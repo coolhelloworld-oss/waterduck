@@ -45,6 +45,7 @@
 namespace Web {
 
 struct MouseEvent;
+struct PinchEvent;
 
 }
 
@@ -103,6 +104,7 @@ public:
     void update_compositor_display_metadata(Web::Compositor::CompositorContextId, Optional<u64> display_id, double refresh_rate);
     bool send_async_scroll_to_compositor(Web::Compositor::CompositorContextId, Gfx::FloatPoint position, Gfx::FloatPoint delta_in_device_pixels);
     bool handle_mouse_event_in_compositor(Web::Compositor::CompositorContextId, Web::MouseEvent const&);
+    bool handle_pinch_event_in_compositor(Web::Compositor::CompositorContextId, Web::PinchEvent const&);
     bool dispatch_mouse_event_to_web_content(Web::Compositor::CompositorContextId, Web::MouseEvent const&);
     void notify_compositor_presented_bitmap_ready_to_paint(Web::Compositor::CompositorContextId, i32 bitmap_id);
 
@@ -269,6 +271,17 @@ private:
     virtual void navigate_tab(DevTools::TabDescription const&, String const&) const override;
     virtual void reload_tab(DevTools::TabDescription const&, bool) const override;
     virtual void traverse_the_history_by_delta(DevTools::TabDescription const&, int) const override;
+    virtual Vector<HTTP::Cookie::Cookie> cookies(DevTools::TabDescription const&) const override;
+    virtual ErrorOr<void> set_cookie(DevTools::TabDescription const&, Optional<HTTP::Cookie::Cookie>, HTTP::Cookie::Cookie) const override;
+    virtual void delete_cookies(DevTools::TabDescription const&, Vector<HTTP::Cookie::Cookie>) const override;
+    virtual void listen_for_host_cookie_changes(DevTools::TabDescription const&, OnHostCookieChange) const override;
+    virtual void stop_listening_for_host_cookie_changes(DevTools::TabDescription const&) const override;
+    virtual void inspect_storage(DevTools::TabDescription const&, Web::StorageAPI::StorageEndpointType, OnStorageItemsReceived) const override;
+    virtual ErrorOr<Optional<String>> set_storage_item(DevTools::TabDescription const&, Web::StorageAPI::StorageEndpointType, String const&, String const&, String const&) const override;
+    virtual ErrorOr<Optional<String>> remove_storage_item(DevTools::TabDescription const&, Web::StorageAPI::StorageEndpointType, String const&, String const&) const override;
+    virtual ErrorOr<void> clear_storage(DevTools::TabDescription const&, Web::StorageAPI::StorageEndpointType, String const&) const override;
+    virtual u64 add_storage_change_listener(DevTools::TabDescription const&, OnStorageChange) const override;
+    virtual void remove_storage_change_listener(DevTools::TabDescription const&, u64) const override;
     virtual void inspect_tab(DevTools::TabDescription const&, OnTabInspectionComplete) const override;
     virtual void inspect_accessibility_tree(DevTools::TabDescription const&, OnAccessibilityTreeInspectionComplete) const override;
     virtual void listen_for_dom_properties(DevTools::TabDescription const&, OnDOMNodePropertiesReceived) const override;
