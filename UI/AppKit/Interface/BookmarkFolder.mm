@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -63,13 +63,13 @@ static constexpr CGFloat const BOOKMARK_FOLDER_ROOT_VERTICAL_SHIFT = 10;
         m_action = action.make_weak_ptr();
         m_hovered = NO;
 
-        Ladybird::add_control_properties(self, action);
-        [self setToolTip:Ladybird::string_to_ns_string(action.tooltip())];
+        Waterduck::add_control_properties(self, action);
+        [self setToolTip:Waterduck::string_to_ns_string(action.tooltip())];
 
-        self.icon_view = Ladybird::create_application_icon(action);
+        self.icon_view = Waterduck::create_application_icon(action);
         [self addSubview:self.icon_view];
 
-        self.title_label = [NSTextField labelWithString:Ladybird::string_to_ns_string(action.text())];
+        self.title_label = [NSTextField labelWithString:Waterduck::string_to_ns_string(action.text())];
         [self.title_label setFont:[NSFont menuFontOfSize:0]];
         [[self.title_label cell] setLineBreakMode:NSLineBreakByTruncatingTail];
         [self addSubview:self.title_label];
@@ -89,13 +89,13 @@ static constexpr CGFloat const BOOKMARK_FOLDER_ROOT_VERTICAL_SHIFT = 10;
         m_menu = menu.make_weak_ptr();
         m_hovered = NO;
 
-        Ladybird::add_control_properties(self, menu);
+        Waterduck::add_control_properties(self, menu);
 
         self.icon_view = [[NSImageView alloc] initWithFrame:NSZeroRect];
         [self.icon_view setImage:[NSImage imageWithSystemSymbolName:@"folder" accessibilityDescription:@""]];
         [self addSubview:self.icon_view];
 
-        self.title_label = [NSTextField labelWithString:Ladybird::string_to_ns_string(menu.title())];
+        self.title_label = [NSTextField labelWithString:Waterduck::string_to_ns_string(menu.title())];
         [self.title_label setFont:[NSFont menuFontOfSize:0]];
         [[self.title_label cell] setLineBreakMode:NSLineBreakByTruncatingTail];
         [self addSubview:self.title_label];
@@ -147,8 +147,8 @@ static constexpr CGFloat const BOOKMARK_FOLDER_ROOT_VERTICAL_SHIFT = 10;
     }
 
     if ([event modifierFlags] & NSEventModifierFlagCommand) {
-        if (auto* type = Ladybird::get_control_property(self, @"type"); [type isEqualToString:@"bookmark"]) {
-            auto bookmark_id = Ladybird::ns_string_to_string(Ladybird::get_control_property(self, @"id"));
+        if (auto* type = Waterduck::get_control_property(self, @"type"); [type isEqualToString:@"bookmark"]) {
+            auto bookmark_id = Waterduck::ns_string_to_string(Waterduck::get_control_property(self, @"id"));
             auto activate_tab = ([event modifierFlags] & NSEventModifierFlagShift) ? Web::HTML::ActivateTab::No : Web::HTML::ActivateTab::Yes;
 
             WebView::Application::the().open_bookmark_in_new_tab(bookmark_id, activate_tab);

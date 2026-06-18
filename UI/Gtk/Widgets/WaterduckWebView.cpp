@@ -10,43 +10,43 @@
 #include <adwaita.h>
 #include <gdk/gdk.h>
 
-#define LADYBIRD_WEB_VIEW(obj) (reinterpret_cast<LadybirdWebView*>(obj))
-#define LADYBIRD_TYPE_WEB_VIEW (ladybird_web_view_get_type())
+#define WATERDUCK_WEB_VIEW(obj) (reinterpret_cast<WaterduckWebView*>(obj))
+#define LADYBIRD_TYPE_WEB_VIEW (waterduck_web_view_get_type())
 
-struct LadybirdWebView {
+struct WaterduckWebView {
     GtkWidget parent_instance;
     Ladybird::WebContentView* impl { nullptr };
     double last_mouse_x { 0 };
     double last_mouse_y { 0 };
 };
 
-struct LadybirdWebViewClass {
+struct WaterduckWebViewClass {
     GtkWidgetClass parent_class;
 };
 
-G_DEFINE_FINAL_TYPE(LadybirdWebView, ladybird_web_view, GTK_TYPE_WIDGET)
+G_DEFINE_FINAL_TYPE(WaterduckWebView, waterduck_web_view, GTK_TYPE_WIDGET)
 
 // GObject vfunc implementations
 
-static void ladybird_web_view_finalize(GObject* object)
+static void waterduck_web_view_finalize(GObject* object)
 {
-    auto* self = LADYBIRD_WEB_VIEW(object);
+    auto* self = WATERDUCK_WEB_VIEW(object);
     // Don't delete impl - it's owned by Tab's OwnPtr<WebContentView>.
     // Just tell the C++ side the widget is gone.
     if (self->impl)
         self->impl->set_widget(nullptr);
     self->impl = nullptr;
-    G_OBJECT_CLASS(ladybird_web_view_parent_class)->finalize(object);
+    G_OBJECT_CLASS(waterduck_web_view_parent_class)->finalize(object);
 }
 
-static void ladybird_web_view_snapshot(GtkWidget* widget, GtkSnapshot* snapshot)
+static void waterduck_web_view_snapshot(GtkWidget* widget, GtkSnapshot* snapshot)
 {
-    auto* self = LADYBIRD_WEB_VIEW(widget);
+    auto* self = WATERDUCK_WEB_VIEW(widget);
     if (self->impl)
         self->impl->paint(snapshot);
 }
 
-static void ladybird_web_view_measure(GtkWidget*, GtkOrientation orientation, int, int* minimum, int* natural, int* minimum_baseline, int* natural_baseline)
+static void waterduck_web_view_measure(GtkWidget*, GtkOrientation orientation, int, int* minimum, int* natural, int* minimum_baseline, int* natural_baseline)
 {
     if (orientation == GTK_ORIENTATION_HORIZONTAL) {
         *minimum = 100;
@@ -59,22 +59,22 @@ static void ladybird_web_view_measure(GtkWidget*, GtkOrientation orientation, in
     *natural_baseline = -1;
 }
 
-static void ladybird_web_view_size_allocate(GtkWidget* widget, int width, int height, int)
+static void waterduck_web_view_size_allocate(GtkWidget* widget, int width, int height, int)
 {
-    auto* self = LADYBIRD_WEB_VIEW(widget);
+    auto* self = WATERDUCK_WEB_VIEW(widget);
     if (self->impl)
         self->impl->update_viewport_size(width, height);
 }
 
-static void ladybird_web_view_class_init(LadybirdWebViewClass* klass)
+static void waterduck_web_view_class_init(WaterduckWebViewClass* klass)
 {
     auto* widget_class = GTK_WIDGET_CLASS(klass);
-    widget_class->snapshot = ladybird_web_view_snapshot;
-    widget_class->measure = ladybird_web_view_measure;
-    widget_class->size_allocate = ladybird_web_view_size_allocate;
+    widget_class->snapshot = waterduck_web_view_snapshot;
+    widget_class->measure = waterduck_web_view_measure;
+    widget_class->size_allocate = waterduck_web_view_size_allocate;
 
     auto* object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = ladybird_web_view_finalize;
+    object_class->finalize = waterduck_web_view_finalize;
 
     gtk_widget_class_set_css_name(widget_class, "ladybird-web-view");
 }
@@ -83,7 +83,7 @@ static void ladybird_web_view_class_init(LadybirdWebViewClass* klass)
 
 static gboolean on_key_pressed(GtkEventControllerKey*, guint keyval, guint, GdkModifierType state, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return GDK_EVENT_PROPAGATE;
 
@@ -99,7 +99,7 @@ static gboolean on_key_pressed(GtkEventControllerKey*, guint keyval, guint, GdkM
 
 static void on_key_released(GtkEventControllerKey*, guint keyval, guint, GdkModifierType state, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return;
 
@@ -111,7 +111,7 @@ static void on_key_released(GtkEventControllerKey*, guint keyval, guint, GdkModi
 
 static void on_mouse_pressed(GtkGestureClick* gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return;
 
@@ -136,7 +136,7 @@ static void on_mouse_pressed(GtkGestureClick* gesture, gint n_press, gdouble x, 
 
 static void on_mouse_released(GtkGestureClick* gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return;
 
@@ -152,7 +152,7 @@ static void on_mouse_released(GtkGestureClick* gesture, gint n_press, gdouble x,
 
 static void on_mouse_motion(GtkEventControllerMotion* controller, gdouble x, gdouble y, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     self->last_mouse_x = x;
     self->last_mouse_y = y;
     if (!self->impl)
@@ -170,7 +170,7 @@ static void on_mouse_motion(GtkEventControllerMotion* controller, gdouble x, gdo
 
 static void on_mouse_leave(GtkEventControllerMotion*, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return;
 
@@ -184,7 +184,7 @@ static void on_mouse_leave(GtkEventControllerMotion*, gpointer user_data)
 
 static gboolean on_scroll(GtkEventControllerScroll* controller, gdouble dx, gdouble dy, gpointer user_data)
 {
-    auto* self = LADYBIRD_WEB_VIEW(user_data);
+    auto* self = WATERDUCK_WEB_VIEW(user_data);
     if (!self->impl)
         return GDK_EVENT_PROPAGATE;
 
@@ -243,7 +243,7 @@ static gboolean on_scroll(GtkEventControllerScroll* controller, gdouble dx, gdou
 
 static void on_map(GtkWidget* widget, gpointer)
 {
-    auto* self = LADYBIRD_WEB_VIEW(widget);
+    auto* self = WATERDUCK_WEB_VIEW(widget);
     if (!self->impl)
         return;
     self->impl->set_system_visibility_state(Web::HTML::VisibilityState::Visible);
@@ -253,13 +253,13 @@ static void on_map(GtkWidget* widget, gpointer)
 
 static void on_unmap(GtkWidget* widget, gpointer)
 {
-    auto* self = LADYBIRD_WEB_VIEW(widget);
+    auto* self = WATERDUCK_WEB_VIEW(widget);
     if (!self->impl)
         return;
     self->impl->set_system_visibility_state(Web::HTML::VisibilityState::Hidden);
 }
 
-static void ladybird_web_view_init(LadybirdWebView* self)
+static void waterduck_web_view_init(WaterduckWebView* self)
 {
     self->impl = nullptr;
 
@@ -269,12 +269,12 @@ static void ladybird_web_view_init(LadybirdWebView* self)
     g_signal_connect(GTK_WIDGET(self), "unmap", G_CALLBACK(on_unmap), nullptr);
 
     auto* focus_controller = gtk_event_controller_focus_new();
-    g_signal_connect_swapped(focus_controller, "enter", G_CALLBACK(+[](LadybirdWebView* self, GtkEventControllerFocus*) {
+    g_signal_connect_swapped(focus_controller, "enter", G_CALLBACK(+[](WaterduckWebView* self, GtkEventControllerFocus*) {
         if (self->impl)
             self->impl->set_has_focus(true);
     }),
         self);
-    g_signal_connect_swapped(focus_controller, "leave", G_CALLBACK(+[](LadybirdWebView* self, GtkEventControllerFocus*) {
+    g_signal_connect_swapped(focus_controller, "leave", G_CALLBACK(+[](WaterduckWebView* self, GtkEventControllerFocus*) {
         if (self->impl)
             self->impl->set_has_focus(false);
     }),
@@ -304,17 +304,17 @@ static void ladybird_web_view_init(LadybirdWebView* self)
 
 // Public API
 
-LadybirdWebView* ladybird_web_view_new()
+WaterduckWebView* waterduck_web_view_new()
 {
-    return LADYBIRD_WEB_VIEW(g_object_new(LADYBIRD_TYPE_WEB_VIEW, nullptr));
+    return WATERDUCK_WEB_VIEW(g_object_new(LADYBIRD_TYPE_WEB_VIEW, nullptr));
 }
 
-Ladybird::WebContentView* ladybird_web_view_get_impl(LadybirdWebView* self)
+Ladybird::WebContentView* waterduck_web_view_get_impl(WaterduckWebView* self)
 {
     return self->impl;
 }
 
-void ladybird_web_view_set_impl(LadybirdWebView* self, Ladybird::WebContentView* impl)
+void waterduck_web_view_set_impl(WaterduckWebView* self, Ladybird::WebContentView* impl)
 {
     self->impl = impl;
 }

@@ -12,21 +12,21 @@
 #include <LibWebView/ViewImplementation.h>
 
 #include <UI/Gtk/GLibPtr.h>
-#include <UI/Gtk/Widgets/LadybirdWebView.h>
+#include <UI/Gtk/Widgets/WaterduckWebView.h>
 
 namespace Ladybird {
 
 class WebContentView final : public WebView::ViewImplementation {
 public:
-    WebContentView(LadybirdWebView* widget, RefPtr<WebView::WebContentClient> parent_client = nullptr, size_t page_index = 0);
+    WebContentView(WaterduckWebView* widget, RefPtr<WebView::WebContentClient> parent_client = nullptr, size_t page_index = 0);
     virtual ~WebContentView() override;
 
-    LadybirdWebView* gtk_widget() const { return m_widget; }
+    WaterduckWebView* gtk_widget() const { return m_widget; }
 
     void update_viewport_size();
     void update_viewport_size(int width, int height);
     void set_device_pixel_ratio(double device_pixel_ratio);
-    void set_widget(LadybirdWebView* widget) { m_widget = widget; }
+    void set_widget(WaterduckWebView* widget) { m_widget = widget; }
     void paint(GtkSnapshot* snapshot);
 
     void update_palette();
@@ -50,7 +50,7 @@ private:
 
     void finish_handling_key_event(Web::KeyEvent const&);
 
-    LadybirdWebView* m_widget { nullptr };
+    WaterduckWebView* m_widget { nullptr };
     Gfx::IntSize m_viewport_size;
 
     // Cached texture to avoid recreation on every snapshot

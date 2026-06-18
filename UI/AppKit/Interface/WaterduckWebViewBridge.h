@@ -14,7 +14,7 @@
 #include <LibWeb/Page/InputEvent.h>
 #include <LibWebView/ViewImplementation.h>
 
-namespace Ladybird {
+namespace Waterduck {
 
 class WebViewBridge final : public WebView::ViewImplementation {
 public:

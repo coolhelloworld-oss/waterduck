@@ -1,4 +1,9 @@
-add_library(ladybird_impl STATIC
+include(CheckLanguage)
+check_language(Swift)
+if(CMAKE_Swift_COMPILER)
+  enable_language(Swift)
+endif()
+add_library(waterduck_impl STATIC
     Application/Application.mm
     Application/ApplicationDelegate.mm
     Application/EventLoopImplementationMacOS.mm
@@ -7,9 +12,9 @@ add_library(ladybird_impl STATIC
     Interface/BookmarksBar.mm
     Interface/Event.mm
     Interface/InfoBar.mm
-    Interface/LadybirdWebView.mm
-    Interface/LadybirdWebViewBridge.cpp
-    Interface/LadybirdWebViewWindow.mm
+    Interface/WaterduckWebView.mm
+    Interface/WaterduckWebViewBridge.mm
+    Interface/WaterduckWebViewWindow.mm
     Interface/Menu.mm
     Interface/Palette.mm
     Interface/SearchPanel.mm
@@ -17,18 +22,22 @@ add_library(ladybird_impl STATIC
     Interface/TabController.mm
     Utilities/Conversions.mm
 )
-target_include_directories(ladybird_impl PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_include_directories(waterduck_impl PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-target_compile_options(ladybird_impl PUBLIC
+target_compile_options(waterduck_impl PUBLIC
         $<$<COMPILE_LANGUAGE:CXX>:-fobjc-arc>
         $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-anon-enum-enum-conversion> # Required for CGImageCreate
 )
-target_compile_features(ladybird_impl PUBLIC cxx_std_23)
+target_compile_features(waterduck_impl PUBLIC cxx_std_23)
 
 add_executable(ladybird MACOSX_BUNDLE
    main.mm
 )
-target_link_libraries(ladybird_impl PUBLIC "-framework Cocoa -framework Metal -framework QuartzCore -framework UniformTypeIdentifiers" LibUnicode)
-target_link_libraries(ladybird PRIVATE ladybird_impl)
+target_link_libraries(waterduck_impl PUBLIC "-framework Cocoa -framework Metal -framework QuartzCore -framework UniformTypeIdentifiers" LibUnicode)
+target_link_libraries(ladybird PRIVATE waterduck_impl)
 
 create_ladybird_bundle(ladybird)
+if(CMAKE_Swift_COMPILER)
+    target_sources(waterduck_impl PRIVATE Interface/WaterduckWebViewBridge.swift)
+    target_compile_definitions(waterduck_impl PUBLIC HAS_SWIFT)
+endif()

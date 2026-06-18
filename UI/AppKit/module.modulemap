@@ -3,12 +3,12 @@ module Ladybird [system] {
     requires objc_arc
 
     explicit module WebView {
-        header "Interface/LadybirdWebView.h"
+        header "Interface/WaterduckWebView.h"
         export *
     }
 
     explicit module WebViewWindow {
-        header "Interface/LadybirdWebViewWindow.h"
+        header "Interface/WaterduckWebViewWindow.h"
         export *
     }
 

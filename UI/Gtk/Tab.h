@@ -16,7 +16,7 @@
 #include <LibWebView/Forward.h>
 #include <LibWebView/Settings.h>
 #include <UI/Gtk/GLibPtr.h>
-#include <UI/Gtk/Widgets/LadybirdWebView.h>
+#include <UI/Gtk/Widgets/WaterduckWebView.h>
 
 #include <adwaita.h>
 
@@ -53,7 +53,7 @@ private:
     BrowserWindow& m_window;
     OwnPtr<WebContentView> m_view;
 
-    LadybirdWebView* m_web_view { nullptr };
+    WaterduckWebView* m_web_view { nullptr };
     AdwTabPage* m_tab_page { nullptr };
 
     URL::URL m_initial_url;

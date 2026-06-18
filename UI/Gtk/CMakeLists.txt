@@ -37,7 +37,7 @@ target_sources(ladybird PRIVATE
     WebContentView.cpp
     Widgets/LadybirdBrowserWindow.cpp
     Widgets/LadybirdLocationEntry.cpp
-    Widgets/LadybirdWebView.cpp
+    Widgets/WaterduckWebView.cpp
     "${GTK_GRESOURCE_SOURCE}"
 )
 target_link_libraries(ladybird PRIVATE PkgConfig::GTK4 PkgConfig::LIBADWAITA)

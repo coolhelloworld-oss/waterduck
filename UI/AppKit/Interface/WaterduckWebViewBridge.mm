@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Interface/LadybirdWebViewBridge.h>
+#include <Interface/WaterduckWebViewBridge.h>
+#if defined(__APPLE__) && defined(__OBJC__) && defined(HAS_SWIFT)
+// CMake generated Swift header for waterduck_impl target
+#import "waterduck_impl-Swift.h"
+#endif
+
 #include <LibGfx/Font/FontDatabase.h>
 #include <LibGfx/Rect.h>
 #include <LibIPC/File.h>
@@ -12,7 +17,7 @@
 
 #import <Interface/Palette.h>
 
-namespace Ladybird {
+namespace Waterduck {
 
 template<typename T>
 static T scale_for_device(T size, double device_pixel_ratio)
@@ -43,13 +48,22 @@ void WebViewBridge::set_device_pixel_ratio(double device_pixel_ratio)
 
 void WebViewBridge::set_zoom_level(double zoom_level)
 {
-    m_zoom_level = zoom_level;
+    #if defined(__APPLE__) && defined(__OBJC__) && defined(HAS_SWIFT)
+    // Call the Swift class to perform the bug-fixed boundary computation
+    WaterduckWebViewBridgeSwift* swiftBridge = [[WaterduckWebViewBridgeSwift alloc] initWithDevicePixelRatio:device_pixel_ratio() maximumFramesPerSecond:0];
+    m_zoom_level = [swiftBridge computeBoundedZoomLevel:zoom_level];
+#else
+    m_zoom_level = AK::max(0.25, AK::min(zoom_level, 5.0));
+#endif
     update_zoom();
 }
 
 void WebViewBridge::set_viewport_rect(Gfx::IntRect viewport_rect)
 {
-    viewport_rect.set_size(scale_for_device(viewport_rect.size(), device_pixel_ratio()));
+    auto scaled_size = scale_for_device(viewport_rect.size(), device_pixel_ratio());
+    scaled_size.set_width(AK::max(1, scaled_size.width()));
+    scaled_size.set_height(AK::max(1, scaled_size.height()));
+    viewport_rect.set_size(scaled_size);
     m_viewport_size = viewport_rect.size();
 
     handle_resize();

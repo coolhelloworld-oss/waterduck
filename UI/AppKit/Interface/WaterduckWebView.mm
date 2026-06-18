@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include <AK/Optional.h>
-#include <Interface/LadybirdWebViewBridge.h>
+#include <Interface/WaterduckWebViewBridge.h>
 #include <LibURL/URL.h>
 #include <LibWeb/HTML/SelectedFile.h>
 #include <LibWebView/Application.h>
@@ -13,7 +13,7 @@
 
 #import <Application/ApplicationDelegate.h>
 #import <Interface/Event.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/Menu.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -69,7 +69,7 @@ static bool is_browser_reserved_key_equivalent(NSEvent* event)
         || character == 'w';
 }
 
-static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge const& web_view_bridge, Web::DevicePixelPoint widget_position)
+static Web::DevicePixelPoint node_picker_position_for(Waterduck::WebViewBridge const& web_view_bridge, Web::DevicePixelPoint widget_position)
 {
     return {
         widget_position.x().value() * web_view_bridge.device_pixel_ratio(),
@@ -77,19 +77,19 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 }
 
-@interface LadybirdWebViewContentLayer : CALayer
+@interface WaterduckWebViewContentLayer : CALayer
 @end
 
-@implementation LadybirdWebViewContentLayer
+@implementation WaterduckWebViewContentLayer
 - (void)display
 {
     [self.delegate displayLayer:self];
 }
 @end
 
-@interface LadybirdWebView () <NSDraggingDestination>
+@interface WaterduckWebView () <NSDraggingDestination>
 {
-    OwnPtr<Ladybird::WebViewBridge> m_web_view_bridge;
+    OwnPtr<Waterduck::WebViewBridge> m_web_view_bridge;
 
     Optional<HideCursor> m_hidden_cursor;
 
@@ -102,7 +102,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     NSEventModifierFlags m_modifier_flags;
 }
 
-@property (nonatomic, weak) id<LadybirdWebViewObserver> observer;
+@property (nonatomic, weak) id<WaterduckWebViewObserver> observer;
 @property (nonatomic, strong) NSMenu* page_context_menu;
 @property (nonatomic, strong) NSMenu* link_context_menu;
 @property (nonatomic, strong) NSMenu* image_context_menu;
@@ -126,11 +126,11 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 @end
 
-@implementation LadybirdWebView
+@implementation WaterduckWebView
 
 @synthesize status_label = _status_label;
 
-- (instancetype)init:(id<LadybirdWebViewObserver>)observer
+- (instancetype)init:(id<WaterduckWebViewObserver>)observer
 {
     if (self = [self initWebView:observer]) {
         m_web_view_bridge->initialize_client();
@@ -144,8 +144,8 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (instancetype)initAsChild:(id<LadybirdWebViewObserver>)observer
-                     parent:(LadybirdWebView*)parent
+- (instancetype)initAsChild:(id<WaterduckWebViewObserver>)observer
+                     parent:(WaterduckWebView*)parent
                   pageIndex:(u64)page_index
 {
     if (self = [self initWebView:observer]) {
@@ -155,7 +155,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     return self;
 }
 
-- (instancetype)initWebView:(id<LadybirdWebViewObserver>)observer
+- (instancetype)initWebView:(id<WaterduckWebViewObserver>)observer
 {
     if (self = [super init]) {
         self.observer = observer;
@@ -171,7 +171,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
         screen_rects.ensure_capacity([screens count]);
 
         for (id screen in screens) {
-            auto screen_rect = Ladybird::ns_rect_to_gfx_rect([screen frame]).to_type<Web::DevicePixels>();
+            auto screen_rect = Waterduck::ns_rect_to_gfx_rect([screen frame]).to_type<Web::DevicePixels>();
             screen_rects.unchecked_append(screen_rect);
         }
 
@@ -180,7 +180,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
         auto maximum_frames_per_second = [[NSScreen mainScreen] maximumFramesPerSecond];
         auto display_id = display_id_for_screen([NSScreen mainScreen]);
 
-        m_web_view_bridge = MUST(Ladybird::WebViewBridge::create(move(screen_rects), device_pixel_ratio, maximum_frames_per_second, display_id));
+        m_web_view_bridge = MUST(Waterduck::WebViewBridge::create(move(screen_rects), device_pixel_ratio, maximum_frames_per_second, display_id));
         [self setWebViewCallbacks];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -188,10 +188,10 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
                                                      name:NSTextInputContextKeyboardSelectionDidChangeNotification
                                                    object:nil];
 
-        self.page_context_menu = Ladybird::create_context_menu(self, [self view].page_context_menu());
-        self.link_context_menu = Ladybird::create_context_menu(self, [self view].link_context_menu());
-        self.image_context_menu = Ladybird::create_context_menu(self, [self view].image_context_menu());
-        self.media_context_menu = Ladybird::create_context_menu(self, [self view].media_context_menu());
+        self.page_context_menu = Waterduck::create_context_menu(self, [self view].page_context_menu());
+        self.link_context_menu = Waterduck::create_context_menu(self, [self view].link_context_menu());
+        self.image_context_menu = Waterduck::create_context_menu(self, [self view].image_context_menu());
+        self.media_context_menu = Waterduck::create_context_menu(self, [self view].media_context_menu());
 
         auto* area = [[NSTrackingArea alloc] initWithRect:[self bounds]
                                                   options:NSTrackingActiveInKeyWindow | NSTrackingInVisibleRect | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
@@ -230,7 +230,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)setWindowPosition:(Gfx::IntPoint)position
 {
-    m_web_view_bridge->set_window_position(Ladybird::compute_origin_relative_to_window([self window], position));
+    m_web_view_bridge->set_window_position(Waterduck::compute_origin_relative_to_window([self window], position));
 }
 
 - (void)setWindowSize:(Gfx::IntSize)size
@@ -240,7 +240,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)handleResize
 {
-    auto size = Ladybird::ns_size_to_gfx_size([[self window] frame].size);
+    auto size = Waterduck::ns_size_to_gfx_size([[self window] frame].size);
     [self setWindowSize:size];
 
     [self updateViewportRect];
@@ -285,7 +285,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 - (void)findInPage:(NSString*)query
     caseSensitivity:(CaseSensitivity)case_sensitivity
 {
-    m_web_view_bridge->find_in_page(Ladybird::ns_string_to_string(query), case_sensitivity);
+    m_web_view_bridge->find_in_page(Waterduck::ns_string_to_string(query), case_sensitivity);
 }
 
 - (void)findInPageNextMatch
@@ -317,7 +317,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)updateViewportRect
 {
-    auto viewport_rect = Ladybird::ns_rect_to_gfx_rect([self frame]);
+    auto viewport_rect = Waterduck::ns_rect_to_gfx_rect([self frame]);
     m_web_view_bridge->set_viewport_rect(viewport_rect);
 }
 
@@ -340,10 +340,10 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 {
     // We need to make sure that these callbacks don't cause reference cycles.
     // By default, capturing self will copy a strong reference to self in ARC.
-    __weak LadybirdWebView* weak_self = self;
+    __weak WaterduckWebView* weak_self = self;
 
     m_web_view_bridge->on_ready_to_paint = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil)
             return;
         if (m_metal_device)
@@ -353,7 +353,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_new_web_view = [weak_self](auto activate_tab, auto, auto page_index) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return String {};
         }
@@ -368,7 +368,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_activate_tab = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -376,7 +376,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_close = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -384,7 +384,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_load_start = [weak_self](auto const& url, bool is_redirect) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -396,7 +396,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_load_finish = [weak_self](auto const& url) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -404,7 +404,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_url_change = [weak_self](auto const& url) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -412,7 +412,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_title_change = [weak_self](auto const& title) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -420,7 +420,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_favicon_change = [weak_self](auto const& bitmap) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -428,11 +428,11 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_finish_handling_key_event = [weak_self](auto const& key_event) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        auto* event = Ladybird::key_event_to_ns_event(key_event);
+        auto* event = Waterduck::key_event_to_ns_event(key_event);
 
         self.event_being_redispatched = event;
         [NSApp sendEvent:event];
@@ -440,7 +440,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_finish_handling_drag_event = [weak_self](auto const& event) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -449,7 +449,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
             return;
         }
 
-        if (auto urls = Ladybird::drag_event_url_list(event); !urls.is_empty()) {
+        if (auto urls = Waterduck::drag_event_url_list(event); !urls.is_empty()) {
             [self loadURL:urls[0]];
 
             for (size_t i = 1; i < urls.size(); ++i) {
@@ -459,14 +459,14 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_cursor_change = [weak_self](auto cursor) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
         cursor.visit(
             [](Gfx::ImageCursor const& image_cursor) {
-                auto* cursor_image = Ladybird::gfx_bitmap_to_ns_image(*image_cursor.bitmap.bitmap());
-                auto hotspot = Ladybird::gfx_point_to_ns_point(image_cursor.hotspot);
+                auto* cursor_image = Waterduck::gfx_bitmap_to_ns_image(*image_cursor.bitmap.bitmap());
+                auto hotspot = Waterduck::gfx_point_to_ns_point(image_cursor.hotspot);
 
                 [[[NSCursor alloc] initWithImage:cursor_image hotSpot:hotspot] set];
             },
@@ -562,7 +562,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_zoom_level_changed = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -570,15 +570,15 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_tooltip_override = [weak_self](auto, auto const& tooltip) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        self.toolTip = Ladybird::string_to_ns_string(tooltip);
+        self.toolTip = Waterduck::string_to_ns_string(tooltip);
     };
 
     m_web_view_bridge->on_stop_tooltip_override = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -586,15 +586,15 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_enter_tooltip_area = [weak_self](auto const& tooltip) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        self.toolTip = Ladybird::string_to_ns_string(tooltip);
+        self.toolTip = Waterduck::string_to_ns_string(tooltip);
     };
 
     m_web_view_bridge->on_leave_tooltip_area = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -602,11 +602,11 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_link_hover = [weak_self](auto const& url) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        auto* url_string = Ladybird::string_to_ns_string(url.serialize());
+        auto* url_string = Waterduck::string_to_ns_string(url.serialize());
         [self.status_label setStringValue:url_string];
         [self.status_label sizeToFit];
         [self.status_label setHidden:NO];
@@ -615,7 +615,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_link_unhover = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -623,11 +623,11 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_alert = [weak_self](auto const& message) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        auto* ns_message = Ladybird::string_to_ns_string(message);
+        auto* ns_message = Waterduck::string_to_ns_string(message);
 
         self.dialog = [[NSAlert alloc] init];
         [self.dialog setMessageText:ns_message];
@@ -640,11 +640,11 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_confirm = [weak_self](auto const& message) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        auto* ns_message = Ladybird::string_to_ns_string(message);
+        auto* ns_message = Waterduck::string_to_ns_string(message);
 
         self.dialog = [[NSAlert alloc] init];
         [[self.dialog addButtonWithTitle:@"OK"] setTag:NSModalResponseOK];
@@ -659,12 +659,12 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_prompt = [weak_self](auto const& message, auto const& default_) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        auto* ns_message = Ladybird::string_to_ns_string(message);
-        auto* ns_default = Ladybird::string_to_ns_string(default_);
+        auto* ns_message = Waterduck::string_to_ns_string(message);
+        auto* ns_default = Waterduck::string_to_ns_string(default_);
 
         auto* input = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
         [input setStringValue:ns_default];
@@ -682,7 +682,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
                                 Optional<String> text;
 
                                 if (response == NSModalResponseOK) {
-                                    text = Ladybird::ns_string_to_string([input stringValue]);
+                                    text = Waterduck::ns_string_to_string([input stringValue]);
                                 }
 
                                 m_web_view_bridge->prompt_closed(move(text));
@@ -691,7 +691,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_set_prompt_text = [weak_self](auto const& message) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -699,14 +699,14 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
             return;
         }
 
-        auto* ns_message = Ladybird::string_to_ns_string(message);
+        auto* ns_message = Waterduck::string_to_ns_string(message);
 
         auto* input = (NSTextField*)[self.dialog accessoryView];
         [input setStringValue:ns_message];
     };
 
     m_web_view_bridge->on_request_accept_dialog = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil || self.dialog == nil) {
             return;
         }
@@ -716,7 +716,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_dismiss_dialog = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil || self.dialog == nil) {
             return;
         }
@@ -726,12 +726,12 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_color_picker = [weak_self](Color current_color) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
         auto* panel = [NSColorPanel sharedColorPanel];
-        [panel setColor:Ladybird::gfx_color_to_ns_color(current_color)];
+        [panel setColor:Waterduck::gfx_color_to_ns_color(current_color)];
         [panel setShowsAlpha:NO];
         [panel setTarget:self];
         [panel setAction:@selector(colorPickerUpdate:)];
@@ -746,7 +746,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_request_file_picker = [weak_self](auto const& accepted_file_types, auto allow_multiple_files) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -780,14 +780,14 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
                     }
                 },
                 [&](Web::HTML::FileFilter::MimeType const& filter) {
-                    auto* ns_mime_type = Ladybird::string_to_ns_string(filter.value);
+                    auto* ns_mime_type = Waterduck::string_to_ns_string(filter.value);
 
                     if (auto* ut_type = [UTType typeWithMIMEType:ns_mime_type]) {
                         [accepted_file_filters addObject:ut_type];
                     }
                 },
                 [&](Web::HTML::FileFilter::Extension const& filter) {
-                    auto* ns_extension = Ladybird::string_to_ns_string(filter.value);
+                    auto* ns_extension = Waterduck::string_to_ns_string(filter.value);
 
                     if (auto* ut_type = [UTType typeWithFilenameExtension:ns_extension]) {
                         [accepted_file_filters addObject:ut_type];
@@ -804,7 +804,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
                           Vector<Web::HTML::SelectedFile> selected_files;
 
                           auto create_selected_file = [&](NSString* ns_file_path) {
-                              auto file_path = Ladybird::ns_string_to_byte_string(ns_file_path);
+                              auto file_path = Waterduck::ns_string_to_byte_string(ns_file_path);
 
                               if (auto file = WebView::create_selected_file(file_path); file.is_error())
                                   warnln("Unable to open file {}: {}", file_path, file.error());
@@ -826,7 +826,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     [self.select_dropdown setDelegate:self];
 
     m_web_view_bridge->on_request_select_dropdown = [weak_self](Gfx::IntPoint content_position, i32 minimum_width, Vector<Web::HTML::SelectItem> items) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -835,7 +835,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
         auto add_menu_item = [self](Web::HTML::SelectItemOption const& item_option, bool in_option_group) {
             NSMenuItem* menuItem = [[NSMenuItem alloc]
-                initWithTitle:Ladybird::string_to_ns_string(in_option_group ? MUST(String::formatted("    {}", item_option.label)) : item_option.label)
+                initWithTitle:Waterduck::string_to_ns_string(in_option_group ? MUST(String::formatted("    {}", item_option.label)) : item_option.label)
                        action:item_option.disabled ? nil : @selector(selectDropdownAction:)
                 keyEquivalent:@""];
             menuItem.representedObject = [NSNumber numberWithUnsignedInt:item_option.id];
@@ -847,7 +847,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
             if (item.has<Web::HTML::SelectItemOptionGroup>()) {
                 auto const& item_option_group = item.get<Web::HTML::SelectItemOptionGroup>();
                 NSMenuItem* subtitle = [[NSMenuItem alloc]
-                    initWithTitle:Ladybird::string_to_ns_string(item_option_group.label)
+                    initWithTitle:Waterduck::string_to_ns_string(item_option_group.label)
                            action:nil
                     keyEquivalent:@""];
                 [self.select_dropdown addItem:subtitle];
@@ -863,12 +863,12 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
                 [self.select_dropdown addItem:[NSMenuItem separatorItem]];
         }
 
-        auto* event = Ladybird::create_context_menu_mouse_event(self, content_position);
+        auto* event = Waterduck::create_context_menu_mouse_event(self, content_position);
         [NSMenu popUpContextMenu:self.select_dropdown withEvent:event forView:self];
     };
 
     m_web_view_bridge->on_restore_window = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -877,32 +877,32 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_reposition_window = [weak_self](auto position) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
 
-        position = Ladybird::compute_origin_relative_to_window([self window], position);
-        [[self window] setFrameOrigin:Ladybird::gfx_point_to_ns_point(position)];
+        position = Waterduck::compute_origin_relative_to_window([self window], position);
+        [[self window] setFrameOrigin:Waterduck::gfx_point_to_ns_point(position)];
 
         m_web_view_bridge->did_update_window_rect();
     };
 
     m_web_view_bridge->on_resize_window = [weak_self](auto size) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
 
         auto frame = [[self window] frame];
-        frame.size = Ladybird::gfx_size_to_ns_size(size);
+        frame.size = Waterduck::gfx_size_to_ns_size(size);
         [[self window] setFrame:frame display:YES];
 
         m_web_view_bridge->did_update_window_rect();
     };
 
     m_web_view_bridge->on_maximize_window = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -914,7 +914,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_minimize_window = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -923,7 +923,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_fullscreen_window = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -932,7 +932,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_exit_fullscreen_window = [weak_self]() {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -941,15 +941,15 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_page_background_color_change = [weak_self](auto color) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
-        self.layer.backgroundColor = [Ladybird::gfx_color_to_ns_color(color) CGColor];
+        self.layer.backgroundColor = [Waterduck::gfx_color_to_ns_color(color) CGColor];
     };
 
     m_web_view_bridge->on_find_in_page = [weak_self](auto current_match_index, auto const& total_match_count) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -958,7 +958,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     };
 
     m_web_view_bridge->on_audio_play_state_changed = [weak_self](auto play_state) {
-        LadybirdWebView* self = weak_self;
+        WaterduckWebView* self = weak_self;
         if (self == nil) {
             return;
         }
@@ -976,7 +976,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
         return;
     }
 
-    auto key_event = Ladybird::ns_event_to_key_event(Web::KeyEvent::Type::KeyDown, self.current_key_down_event, shouldInsertText);
+    auto key_event = Waterduck::ns_event_to_key_event(Web::KeyEvent::Type::KeyDown, self.current_key_down_event, shouldInsertText);
     m_web_view_bridge->enqueue_input_event(move(key_event));
 
     self.current_key_down_event = nil;
@@ -996,12 +996,12 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)colorPickerUpdate:(NSColorPanel*)colorPanel
 {
-    m_web_view_bridge->color_picker_update(Ladybird::ns_color_to_gfx_color(colorPanel.color), Web::HTML::ColorPickerUpdateState::Update);
+    m_web_view_bridge->color_picker_update(Waterduck::ns_color_to_gfx_color(colorPanel.color), Web::HTML::ColorPickerUpdateState::Update);
 }
 
 - (void)colorPickerClosed:(NSNotification*)notification
 {
-    m_web_view_bridge->color_picker_update(Ladybird::ns_color_to_gfx_color([NSColorPanel sharedColorPanel].color), Web::HTML::ColorPickerUpdateState::Closed);
+    m_web_view_bridge->color_picker_update(Waterduck::ns_color_to_gfx_color([NSColorPanel sharedColorPanel].color), Web::HTML::ColorPickerUpdateState::Closed);
 }
 
 #pragma mark - Properties
@@ -1025,9 +1025,9 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 - (CALayer*)makeBackingLayer
 {
     if (!m_metal_device) {
-        CALayer* layer = [LadybirdWebViewContentLayer layer];
+        CALayer* layer = [WaterduckWebViewContentLayer layer];
         layer.contentsGravity = kCAGravityTopLeft;
-        layer.backgroundColor = [Ladybird::gfx_color_to_ns_color(m_web_view_bridge->page_background_color()) CGColor];
+        layer.backgroundColor = [Waterduck::gfx_color_to_ns_color(m_web_view_bridge->page_background_color()) CGColor];
         return layer;
     }
 
@@ -1037,7 +1037,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     layer.framebufferOnly = YES;
     layer.displaySyncEnabled = YES;
     layer.contentsGravity = kCAGravityTopLeft;
-    layer.backgroundColor = [Ladybird::gfx_color_to_ns_color(m_web_view_bridge->page_background_color()) CGColor];
+    layer.backgroundColor = [Waterduck::gfx_color_to_ns_color(m_web_view_bridge->page_background_color()) CGColor];
     return layer;
 }
 
@@ -1148,7 +1148,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     [super viewDidMoveToWindow];
     [self handleResize];
 
-    auto window = Ladybird::ns_rect_to_gfx_rect([[self window] frame]);
+    auto window = Waterduck::ns_rect_to_gfx_rect([[self window] frame]);
     [self setWindowPosition:window.location()];
     [self setWindowSize:window.size()];
 }
@@ -1184,7 +1184,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)mouseMoved:(NSEvent*)event
 {
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::None);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::None);
     if (m_web_view_bridge->is_node_picker_active()) {
         m_web_view_bridge->node_picker_hover(node_picker_position_for(*m_web_view_bridge, mouse_event.position));
         return;
@@ -1198,7 +1198,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseWheel, event, self, Web::UIEvents::MouseButton::Middle);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseWheel, event, self, Web::UIEvents::MouseButton::Middle);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1206,7 +1206,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 {
     [[self window] makeFirstResponder:self];
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Primary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Primary);
     if (m_web_view_bridge->is_node_picker_active()) {
         if ((event.modifierFlags & NSEventModifierFlagCommand) != 0)
             m_web_view_bridge->node_picker_preview(node_picker_position_for(*m_web_view_bridge, mouse_event.position));
@@ -1223,7 +1223,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Primary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Primary);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1232,7 +1232,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Primary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Primary);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1243,7 +1243,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Secondary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Secondary);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1252,7 +1252,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Secondary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Secondary);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1261,7 +1261,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Secondary);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Secondary);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1275,7 +1275,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Middle);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseDown, event, self, Web::UIEvents::MouseButton::Middle);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1287,7 +1287,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Middle);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseUp, event, self, Web::UIEvents::MouseButton::Middle);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1299,7 +1299,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto mouse_event = Ladybird::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Middle);
+    auto mouse_event = Waterduck::ns_event_to_mouse_event(Web::MouseEvent::Type::MouseMove, event, self, Web::UIEvents::MouseButton::Middle);
     m_web_view_bridge->enqueue_input_event(move(mouse_event));
 }
 
@@ -1329,7 +1329,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     }
 
     if (m_web_view_bridge->is_node_picker_active()) {
-        auto key_event = Ladybird::ns_event_to_key_event(Web::KeyEvent::Type::KeyDown, event);
+        auto key_event = Waterduck::ns_event_to_key_event(Web::KeyEvent::Type::KeyDown, event);
         if (key_event.key == Web::UIEvents::KeyCode::Key_Escape)
             m_web_view_bridge->node_picker_cancel();
         return;
@@ -1348,7 +1348,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
     if (m_web_view_bridge->is_node_picker_active())
         return;
 
-    auto key_event = Ladybird::ns_event_to_key_event(Web::KeyEvent::Type::KeyUp, event);
+    auto key_event = Waterduck::ns_event_to_key_event(Web::KeyEvent::Type::KeyUp, event);
     m_web_view_bridge->enqueue_input_event(move(key_event));
 }
 
@@ -1375,7 +1375,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
             return;
         }
 
-        auto key_event = Ladybird::ns_event_to_key_event(type, event);
+        auto key_event = Waterduck::ns_event_to_key_event(type, event);
         m_web_view_bridge->enqueue_input_event(move(key_event));
     };
 
@@ -1521,7 +1521,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)event
 {
-    auto drag_event = Ladybird::ns_event_to_drag_event(Web::DragEvent::Type::DragStart, event, self);
+    auto drag_event = Waterduck::ns_event_to_drag_event(Web::DragEvent::Type::DragStart, event, self);
     m_web_view_bridge->enqueue_input_event(move(drag_event));
 
     return NSDragOperationCopy;
@@ -1529,7 +1529,7 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)event
 {
-    auto drag_event = Ladybird::ns_event_to_drag_event(Web::DragEvent::Type::DragMove, event, self);
+    auto drag_event = Waterduck::ns_event_to_drag_event(Web::DragEvent::Type::DragMove, event, self);
     m_web_view_bridge->enqueue_input_event(move(drag_event));
 
     return NSDragOperationCopy;
@@ -1537,13 +1537,13 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
 - (void)draggingExited:(id<NSDraggingInfo>)event
 {
-    auto drag_event = Ladybird::ns_event_to_drag_event(Web::DragEvent::Type::DragEnd, event, self);
+    auto drag_event = Waterduck::ns_event_to_drag_event(Web::DragEvent::Type::DragEnd, event, self);
     m_web_view_bridge->enqueue_input_event(move(drag_event));
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)event
 {
-    auto drag_event = Ladybird::ns_event_to_drag_event(Web::DragEvent::Type::Drop, event, self);
+    auto drag_event = Waterduck::ns_event_to_drag_event(Web::DragEvent::Type::Drop, event, self);
     m_web_view_bridge->enqueue_input_event(move(drag_event));
 
     return YES;
@@ -1575,8 +1575,8 @@ static Web::DevicePixelPoint node_picker_position_for(Ladybird::WebViewBridge co
 
     NSPoint point = [recognizer locationInView:self];
     Web::PinchEvent pinch_event;
-    pinch_event.position = Ladybird::ns_point_to_gfx_point(point).to_type<Web::DevicePixels>() * m_web_view_bridge->device_pixel_ratio();
-    pinch_event.modifiers = Ladybird::ns_modifiers_to_key_modifiers([NSEvent modifierFlags]);
+    pinch_event.position = Waterduck::ns_point_to_gfx_point(point).to_type<Web::DevicePixels>() * m_web_view_bridge->device_pixel_ratio();
+    pinch_event.modifiers = Waterduck::ns_modifiers_to_key_modifiers([NSEvent modifierFlags]);
     pinch_event.scale_delta = scale_delta;
     m_web_view_bridge->enqueue_input_event(move(pinch_event));
 }

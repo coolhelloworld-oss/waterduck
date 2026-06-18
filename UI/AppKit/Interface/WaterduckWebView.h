@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -17,7 +17,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@protocol LadybirdWebViewObserver <NSObject>
+@protocol WaterduckWebViewObserver <NSObject>
 
 - (String const&)onCreateNewTab:(Optional<URL::URL> const&)url
                     activateTab:(Web::HTML::ActivateTab)activate_tab;
@@ -42,11 +42,11 @@
 
 @end
 
-@interface LadybirdWebView : NSView <NSMenuDelegate, NSTextInputClient>
+@interface WaterduckWebView : NSView <NSMenuDelegate, NSTextInputClient>
 
-- (instancetype)init:(id<LadybirdWebViewObserver>)observer;
-- (instancetype)initAsChild:(id<LadybirdWebViewObserver>)observer
-                     parent:(LadybirdWebView*)parent
+- (instancetype)init:(id<WaterduckWebViewObserver>)observer;
+- (instancetype)initAsChild:(id<WaterduckWebViewObserver>)observer
+                     parent:(WaterduckWebView*)parent
                   pageIndex:(u64)page_index;
 
 - (void)loadURL:(URL::URL const&)url;
