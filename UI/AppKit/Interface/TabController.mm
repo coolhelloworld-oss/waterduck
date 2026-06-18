@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,7 +13,7 @@
 
 #import <Application/ApplicationDelegate.h>
 #import <Interface/Autocomplete.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/Menu.h>
 #import <Interface/Tab.h>
 #import <Interface/TabController.h>
@@ -155,7 +155,7 @@ static bool should_suppress_inline_autocomplete_for_selector(SEL selector)
 static NSInteger autocomplete_suggestion_index(NSString* suggestion_text, Vector<WebView::AutocompleteSuggestion> const& suggestions)
 {
     for (size_t index = 0; index < suggestions.size(); ++index) {
-        auto* candidate_text = Ladybird::string_to_ns_string(suggestions[index].text);
+        auto* candidate_text = Waterduck::string_to_ns_string(suggestions[index].text);
         if ([candidate_text isEqualToString:suggestion_text])
             return static_cast<NSInteger>(index);
     }
@@ -546,15 +546,15 @@ static NSImage* location_field_globe_icon()
         }
 
         auto* attributed_scheme_and_subdomain = [[NSAttributedString alloc]
-            initWithString:Ladybird::string_to_ns_string(scheme_and_subdomain)
+            initWithString:Waterduck::string_to_ns_string(scheme_and_subdomain)
                 attributes:dark_attributes];
 
         auto* attributed_effective_tld_plus_one = [[NSAttributedString alloc]
-            initWithString:Ladybird::string_to_ns_string(url_parts->effective_tld_plus_one)
+            initWithString:Waterduck::string_to_ns_string(url_parts->effective_tld_plus_one)
                 attributes:highlight_attributes];
 
         auto* attributed_remainder = [[NSAttributedString alloc]
-            initWithString:Ladybird::string_to_ns_string(remainder)
+            initWithString:Waterduck::string_to_ns_string(remainder)
                 attributes:dark_attributes];
 
         [attributed_url appendAttributedString:attributed_scheme_and_subdomain];
@@ -562,13 +562,13 @@ static NSImage* location_field_globe_icon()
         [attributed_url appendAttributedString:attributed_remainder];
     } else {
         attributed_url = [[NSMutableAttributedString alloc]
-            initWithString:Ladybird::string_to_ns_string(display_url)
+            initWithString:Waterduck::string_to_ns_string(display_url)
                 attributes:highlight_attributes];
     }
 
-    if (display == LocationFieldDisplay::NotEditing && maybe_url.has_value() && ![[attributed_url string] isEqualToString:Ladybird::string_to_ns_string(display_url)]) {
+    if (display == LocationFieldDisplay::NotEditing && maybe_url.has_value() && ![[attributed_url string] isEqualToString:Waterduck::string_to_ns_string(display_url)]) {
         attributed_url = [[NSMutableAttributedString alloc]
-            initWithString:Ladybird::string_to_ns_string(display_url)
+            initWithString:Waterduck::string_to_ns_string(display_url)
                 attributes:highlight_attributes];
     }
 
@@ -586,7 +586,7 @@ static NSImage* location_field_globe_icon()
 {
     auto const& url = [[[self tab] web_view] view].url();
     auto* location_search_field = (LocationSearchField*)[self.location_toolbar_item view];
-    if (![[location_search_field stringValue] isEqualToString:Ladybird::string_to_ns_string(WebView::url_for_display(url))])
+    if (![[location_search_field stringValue] isEqualToString:Waterduck::string_to_ns_string(WebView::url_for_display(url))])
         return;
 
     m_is_applying_inline_autocomplete = true;
@@ -594,7 +594,7 @@ static NSImage* location_field_globe_icon()
 
     auto* editor = (NSTextView*)[location_search_field currentEditor];
     if (editor != nil && [self.window firstResponder] == editor && ![editor hasMarkedText]) {
-        auto* serialized_url = Ladybird::string_to_ns_string(url.serialize());
+        auto* serialized_url = Waterduck::string_to_ns_string(url.serialize());
         [editor setString:serialized_url];
         [editor setSelectedRange:NSMakeRange(0, serialized_url.length)];
     }
@@ -694,7 +694,7 @@ static NSImage* location_field_globe_icon()
     }
 
     // Try to inline-preview row 0 specifically.
-    auto* row_0_text = Ladybird::string_to_ns_string(suggestions.first().text);
+    auto* row_0_text = Waterduck::string_to_ns_string(suggestions.first().text);
     if (auto* row_0_inline = inline_autocomplete_text_for_suggestion(query, row_0_text); row_0_inline != nil) {
         self.current_inline_autocomplete_suggestion = row_0_text;
         [self applyLocationFieldInlineAutocompleteText:row_0_inline forQuery:query];
@@ -752,7 +752,7 @@ static NSImage* location_field_globe_icon()
 - (void)previewHighlightedSuggestionInLocationField:(String const&)suggestion
 {
     auto* query = [self currentLocationFieldQuery];
-    auto* suggestion_text = Ladybird::string_to_ns_string(suggestion);
+    auto* suggestion_text = Waterduck::string_to_ns_string(suggestion);
     [self applyInlineAutocompleteSuggestionText:suggestion_text forQuery:query];
 }
 
@@ -825,7 +825,7 @@ static NSImage* location_field_globe_icon()
 - (NSToolbarItem*)navigate_back_toolbar_item
 {
     if (!_navigate_back_toolbar_item) {
-        auto* button = Ladybird::create_application_button([[[self tab] web_view] view].navigate_back_action());
+        auto* button = Waterduck::create_application_button([[[self tab] web_view] view].navigate_back_action());
 
         _navigate_back_toolbar_item = [[NSToolbarItem alloc] initWithItemIdentifier:TOOLBAR_NAVIGATE_BACK_IDENTIFIER];
         [_navigate_back_toolbar_item setView:button];
@@ -837,7 +837,7 @@ static NSImage* location_field_globe_icon()
 - (NSToolbarItem*)navigate_forward_toolbar_item
 {
     if (!_navigate_forward_toolbar_item) {
-        auto* button = Ladybird::create_application_button([[[self tab] web_view] view].navigate_forward_action());
+        auto* button = Waterduck::create_application_button([[[self tab] web_view] view].navigate_forward_action());
 
         _navigate_forward_toolbar_item = [[NSToolbarItem alloc] initWithItemIdentifier:TOOLBAR_NAVIGATE_FORWARD_IDENTIFIER];
         [_navigate_forward_toolbar_item setView:button];
@@ -849,7 +849,7 @@ static NSImage* location_field_globe_icon()
 - (NSToolbarItem*)reload_toolbar_item
 {
     if (!_reload_toolbar_item) {
-        auto* button = Ladybird::create_application_button(WebView::Application::the().reload_action());
+        auto* button = Waterduck::create_application_button(WebView::Application::the().reload_action());
 
         _reload_toolbar_item = [[NSToolbarItem alloc] initWithItemIdentifier:TOOLBAR_RELOAD_IDENTIFIER];
         [_reload_toolbar_item setView:button];
@@ -884,7 +884,7 @@ static NSImage* location_field_globe_icon()
 - (NSToolbarItem*)zoom_toolbar_item
 {
     if (!_zoom_toolbar_item) {
-        auto* button = Ladybird::create_application_button([[[self tab] web_view] view].reset_zoom_action());
+        auto* button = Waterduck::create_application_button([[[self tab] web_view] view].reset_zoom_action());
 
         _zoom_toolbar_item = [[NSToolbarItem alloc] initWithItemIdentifier:TOOLBAR_ZOOM_IDENTIFIER];
         [_zoom_toolbar_item setView:button];
@@ -896,7 +896,7 @@ static NSImage* location_field_globe_icon()
 - (NSToolbarItem*)bookmark_toolbar_item
 {
     if (!_bookmark_toolbar_item) {
-        auto* button = Ladybird::create_application_button([[[self tab] web_view] view].toggle_bookmark_action());
+        auto* button = Waterduck::create_application_button([[[self tab] web_view] view].toggle_bookmark_action());
 
         _bookmark_toolbar_item = [[NSToolbarItem alloc] initWithItemIdentifier:TOOLBAR_BOOKMARK_IDENTIFIER];
         [_bookmark_toolbar_item setView:button];
@@ -1024,7 +1024,7 @@ static NSImage* location_field_globe_icon()
 
 - (void)windowDidMove:(NSNotification*)notification
 {
-    auto position = Ladybird::ns_point_to_gfx_point([[self tab] frame].origin);
+    auto position = Waterduck::ns_point_to_gfx_point([[self tab] frame].origin);
     [[[self tab] web_view] setWindowPosition:position];
 }
 
@@ -1194,7 +1194,7 @@ static NSImage* location_field_globe_icon()
     }
 
     auto location = [self.autocomplete selectedSuggestion].value_or_lazy_evaluated([&]() {
-        return Ladybird::ns_string_to_string([[text_view textStorage] string]);
+        return Waterduck::ns_string_to_string([[text_view textStorage] string]);
     });
 
     [self navigateToLocation:move(location)];
@@ -1220,7 +1220,7 @@ static NSImage* location_field_globe_icon()
         self.suppressed_inline_autocomplete_query = nil;
         m_should_suppress_inline_autocomplete_on_next_change = false;
         [self.autocomplete close];
-        [self setLocationFieldText:Ladybird::ns_string_to_string(url_string)];
+        [self setLocationFieldText:Waterduck::ns_string_to_string(url_string)];
     });
 }
 
@@ -1244,7 +1244,7 @@ static NSImage* location_field_globe_icon()
             self.current_inline_autocomplete_suggestion = nil;
     }
 
-    auto url_string = Ladybird::ns_string_to_string(query);
+    auto url_string = Waterduck::ns_string_to_string(query);
     m_autocomplete->query_autocomplete_engine(move(url_string), MAXIMUM_VISIBLE_AUTOCOMPLETE_SUGGESTIONS);
 }
 

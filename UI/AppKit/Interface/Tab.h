@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,12 +9,12 @@
 #include <AK/Types.h>
 
 #import <Cocoa/Cocoa.h>
-#import <Interface/LadybirdWebViewWindow.h>
+#import <Interface/WaterduckWebViewWindow.h>
 
 @class BookmarksBar;
-@class LadybirdWebView;
+@class WaterduckWebView;
 
-@interface Tab : LadybirdWebViewWindow
+@interface Tab : WaterduckWebViewWindow
 
 - (instancetype)init;
 - (instancetype)initAsChild:(Tab*)parent

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,7 +15,7 @@
 #import <Application/Application.h>
 #import <Application/ApplicationDelegate.h>
 #import <Interface/BookmarksBar.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/Tab.h>
 #import <Interface/TabController.h>
 
@@ -23,7 +23,7 @@
 #    error "This project requires ARC"
 #endif
 
-namespace Ladybird {
+namespace Waterduck {
 
 Application::Application() = default;
 
@@ -69,13 +69,13 @@ void Application::open_url_in_new_window(URL::URL const& url)
 Optional<ByteString> Application::ask_user_for_download_path(StringView file) const
 {
     auto* panel = [NSSavePanel savePanel];
-    [panel setNameFieldStringValue:Ladybird::string_to_ns_string(file)];
+    [panel setNameFieldStringValue:Waterduck::string_to_ns_string(file)];
     [panel setTitle:@"Select save location"];
 
     if ([panel runModal] != NSModalResponseOK)
         return {};
 
-    return Ladybird::ns_string_to_byte_string([[panel URL] path]);
+    return Waterduck::ns_string_to_byte_string([[panel URL] path]);
 }
 
 void Application::display_download_confirmation_dialog(StringView download_name, LexicalPath const& path) const
@@ -85,11 +85,11 @@ void Application::display_download_confirmation_dialog(StringView download_name,
     auto message = MUST(String::formatted("{} saved to: {}", download_name, path));
 
     auto* dialog = [[NSAlert alloc] init];
-    [dialog setMessageText:Ladybird::string_to_ns_string(message)];
+    [dialog setMessageText:Waterduck::string_to_ns_string(message)];
     [[dialog addButtonWithTitle:@"OK"] setTag:NSModalResponseOK];
     [[dialog addButtonWithTitle:@"Open folder"] setTag:NSModalResponseContinue];
 
-    __block auto* ns_path = Ladybird::string_to_ns_string(path.string());
+    __block auto* ns_path = Waterduck::string_to_ns_string(path.string());
 
     [dialog beginSheetModalForWindow:[delegate activeTab]
                    completionHandler:^(NSModalResponse response) {
@@ -104,7 +104,7 @@ void Application::display_error_dialog(StringView error_message) const
     ApplicationDelegate* delegate = [NSApp delegate];
 
     auto* dialog = [[NSAlert alloc] init];
-    [dialog setMessageText:Ladybird::string_to_ns_string(error_message)];
+    [dialog setMessageText:Waterduck::string_to_ns_string(error_message)];
 
     [dialog beginSheetModalForWindow:[delegate activeTab]
                    completionHandler:nil];
@@ -115,7 +115,7 @@ Utf16String Application::clipboard_text(ClipboardType) const
     auto* paste_board = [NSPasteboard generalPasteboard];
 
     if (auto* contents = [paste_board stringForType:NSPasteboardTypeString])
-        return Ladybird::ns_string_to_utf16_string(contents);
+        return Waterduck::ns_string_to_utf16_string(contents);
     return {};
 }
 
@@ -136,7 +136,7 @@ Vector<Web::Clipboard::SystemClipboardRepresentation> Application::clipboard_ent
         else
             continue;
 
-        auto data = Ladybird::ns_data_to_string([paste_board dataForType:type]);
+        auto data = Waterduck::ns_data_to_string([paste_board dataForType:type]);
         representations.empend(move(data), move(mime_type));
     }
 
@@ -160,7 +160,7 @@ void Application::insert_clipboard_entry(Web::Clipboard::SystemClipboardRepresen
     auto* paste_board = [NSPasteboard generalPasteboard];
     [paste_board clearContents];
 
-    [paste_board setData:Ladybird::string_to_ns_data(entry.data)
+    [paste_board setData:Waterduck::string_to_ns_data(entry.data)
                  forType:pasteboard_type];
 }
 
@@ -190,9 +190,9 @@ Optional<Application::BookmarkID> Application::bookmark_item_id_for_context_menu
         auto* bookmarks_bar = [tab bookmarksBar];
 
         return Application::BookmarkID {
-            .id = Ladybird::ns_string_to_string([bookmarks_bar selected_bookmark_menu_item_id]),
+            .id = Waterduck::ns_string_to_string([bookmarks_bar selected_bookmark_menu_item_id]),
             .target_folder_id = [bookmarks_bar selected_bookmark_menu_target_folder_id]
-                ? Optional<String> { Ladybird::ns_string_to_string([bookmarks_bar selected_bookmark_menu_target_folder_id]) }
+                ? Optional<String> { Waterduck::ns_string_to_string([bookmarks_bar selected_bookmark_menu_target_folder_id]) }
                 : Optional<String> {},
         };
     }
@@ -212,7 +212,7 @@ static NSTextField* create_bookmark_dialog_text_field(Optional<String const&> te
     [[text_field widthAnchor] constraintEqualToConstant:BOOKMARK_TEXT_WIDTH].active = YES;
 
     if (text.has_value())
-        [text_field setStringValue:Ladybird::string_to_ns_string(*text)];
+        [text_field setStringValue:Waterduck::string_to_ns_string(*text)];
 
     return text_field;
 }
@@ -283,14 +283,14 @@ static NonnullRefPtr<PromiseType> display_add_or_edit_bookmark_dialog(
                            return;
                        }
 
-                       auto url = WebView::sanitize_url(Ladybird::ns_string_to_string([url_field stringValue]));
+                       auto url = WebView::sanitize_url(Waterduck::ns_string_to_string([url_field stringValue]));
                        if (!url.has_value()) {
                            promise->reject(Error::from_errno(EINVAL));
                            return;
                        }
 
                        Optional<String> bookmark_title;
-                       if (auto text = Ladybird::ns_string_to_string([title_field stringValue]); !text.is_empty())
+                       if (auto text = Waterduck::ns_string_to_string([title_field stringValue]); !text.is_empty())
                            bookmark_title = move(text);
 
                        promise->resolve(WebView::BookmarkItem::Bookmark {
@@ -346,7 +346,7 @@ static NonnullRefPtr<PromiseType> display_add_or_edit_bookmark_folder_dialog(
                        }
 
                        Optional<String> folder_title;
-                       if (auto text = Ladybird::ns_string_to_string([title_field stringValue]); !text.is_empty())
+                       if (auto text = Waterduck::ns_string_to_string([title_field stringValue]); !text.is_empty())
                            folder_title = move(text);
 
                        promise->resolve(WebView::BookmarkItem::Folder {

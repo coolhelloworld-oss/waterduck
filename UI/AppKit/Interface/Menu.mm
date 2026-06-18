@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2025-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #import <Interface/Event.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/Menu.h>
 #import <Utilities/Conversions.h>
 #import <objc/runtime.h>
@@ -38,7 +38,7 @@
     if (!action)
         return;
 
-    if (![[[NSApp keyWindow] firstResponder] isKindOfClass:[LadybirdWebView class]]) {
+    if (![[[NSApp keyWindow] firstResponder] isKindOfClass:[WaterduckWebView class]]) {
         switch (action->id()) {
         case WebView::ActionID::CopySelection:
             [NSApp sendAction:@selector(copy:) to:nil from:sender];
@@ -89,7 +89,7 @@
 
 @end
 
-namespace Ladybird {
+namespace Waterduck {
 
 static char PROPERTIES_KEY = 0;
 
@@ -262,7 +262,7 @@ static void initialize_native_icon(WebView::Action& action, id control)
         break;
     case WebView::ActionID::BookmarkItem:
         if (auto icon = action.base64_png_icon(); icon.has_value())
-            [control setImage:Ladybird::image_from_base64_png(*icon, NSMakeSize(MENU_ICON_SIZE, MENU_ICON_SIZE))];
+            [control setImage:Waterduck::image_from_base64_png(*icon, NSMakeSize(MENU_ICON_SIZE, MENU_ICON_SIZE))];
         else
             set_control_image(control, @"globe");
         break;
@@ -426,15 +426,15 @@ void repopulate_application_menu(NSMenu* menu, WebView::Menu& source)
     add_items_to_menu(menu, source);
 }
 
-NSMenu* create_context_menu(LadybirdWebView* view, WebView::Menu& menu)
+NSMenu* create_context_menu(WaterduckWebView* view, WebView::Menu& menu)
 {
     auto* application_menu = create_application_menu(menu);
 
-    __weak LadybirdWebView* weak_view = view;
+    __weak WaterduckWebView* weak_view = view;
     __weak NSMenu* weak_application_menu = application_menu;
 
     menu.on_activation = [weak_view, weak_application_menu](Gfx::IntPoint position) {
-        LadybirdWebView* view = weak_view;
+        WaterduckWebView* view = weak_view;
         NSMenu* application_menu = weak_application_menu;
 
         if (view && application_menu) {

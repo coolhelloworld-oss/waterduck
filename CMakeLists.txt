@@ -29,10 +29,10 @@ if (APPLE AND NOT CMAKE_OSX_SYSROOT)
     set(CMAKE_OSX_SYSROOT macosx)
 endif()
 
-project(ladybird
+project(waterduck
         VERSION 0.1.0
         LANGUAGES C CXX
-        DESCRIPTION "Ladybird Web Browser"
+        DESCRIPTION "Waterduck Web Browser"
         HOMEPAGE_URL "https://ladybird.org"
 )
 

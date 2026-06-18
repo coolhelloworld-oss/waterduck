@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -123,7 +123,7 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
     [self.bookmark_items setSubviews:@[]];
 
     auto set_button_properties = [](NSButton* button, StringView title) {
-        [button setTitle:Ladybird::string_to_ns_string(title)];
+        [button setTitle:Waterduck::string_to_ns_string(title)];
         [button setImagePosition:NSImageLeading];
 
         [button setBezelStyle:NSBezelStyleAccessoryBarAction];
@@ -142,7 +142,7 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
                 if (bookmark->id() != WebView::ActionID::BookmarkItem)
                     return nil;
 
-                auto* button = Ladybird::create_application_button(bookmark);
+                auto* button = Waterduck::create_application_button(bookmark);
                 set_button_properties(button, bookmark->text());
 
                 return button;
@@ -153,7 +153,7 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
                                                   action:@selector(openFolder:)];
                 set_button_properties(button, folder->title());
 
-                Ladybird::add_control_properties(button, *folder);
+                Waterduck::add_control_properties(button, *folder);
                 return button;
             },
             [](WebView::Separator) -> NSButton* {
@@ -188,10 +188,10 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
             if (button_index < [buttons count] && [buttons[button_index] isHidden]) {
                 item.visit(
                     [&](NonnullRefPtr<WebView::Action> const& action) {
-                        [_overflow_menu addItem:Ladybird::create_application_menu_item(action)];
+                        [_overflow_menu addItem:Waterduck::create_application_menu_item(action)];
                     },
                     [&](NonnullRefPtr<WebView::Menu> const& folder) {
-                        [_overflow_menu addItem:Ladybird::create_application_menu_item(*folder)];
+                        [_overflow_menu addItem:Waterduck::create_application_menu_item(*folder)];
                     },
                     [](WebView::Separator) {});
             }
@@ -214,11 +214,11 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
 
 - (void)openFolder:(NSButton*)sender
 {
-    auto* item_id = Ladybird::get_control_property(sender, @"id");
+    auto* item_id = Waterduck::get_control_property(sender, @"id");
     if (!item_id)
         return;
 
-    auto id = Ladybird::ns_string_to_string(item_id);
+    auto id = Waterduck::ns_string_to_string(item_id);
     auto folder = find_bookmark_folder_by_id(WebView::Application::the().bookmarks_menu(), id);
     if (!folder.has_value())
         return;
@@ -273,10 +273,10 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
 
 - (void)showContextMenu:(id)control event:(NSEvent*)event
 {
-    self.selected_bookmark_menu_item_id = Ladybird::get_control_property(control, @"id");
-    self.selected_bookmark_menu_target_folder_id = Ladybird::get_control_property(control, @"target_folder_id");
+    self.selected_bookmark_menu_item_id = Waterduck::get_control_property(control, @"id");
+    self.selected_bookmark_menu_target_folder_id = Waterduck::get_control_property(control, @"target_folder_id");
 
-    if (auto* type = Ladybird::get_control_property(control, @"type"); [type isEqualToString:@"bookmark"])
+    if (auto* type = Waterduck::get_control_property(control, @"type"); [type isEqualToString:@"bookmark"])
         [NSMenu popUpContextMenu:self.bookmark_context_menu withEvent:event forView:control];
     else if ([type isEqualToString:@"folder"])
         [NSMenu popUpContextMenu:self.bookmark_folder_context_menu withEvent:event forView:control];
@@ -287,12 +287,12 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
            bookmarkItem:(Optional<WebView::BookmarkItem const&>)item
          targetFolderID:(Optional<String const&>)target_folder_id
 {
-    auto* event = Ladybird::create_context_menu_mouse_event(view, content_position);
+    auto* event = Waterduck::create_context_menu_mouse_event(view, content_position);
 
     if (item.has_value()) {
-        self.selected_bookmark_menu_item_id = Ladybird::string_to_ns_string(item->id);
+        self.selected_bookmark_menu_item_id = Waterduck::string_to_ns_string(item->id);
         self.selected_bookmark_menu_target_folder_id = target_folder_id.has_value()
-            ? Ladybird::string_to_ns_string(*target_folder_id)
+            ? Waterduck::string_to_ns_string(*target_folder_id)
             : nil;
 
         if (item->is_bookmark())
@@ -352,8 +352,8 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
 
     if ([event modifierFlags] & NSEventModifierFlagCommand) {
         if (auto* button = [self bookmarkButtonForEvent:event]) {
-            if (auto* type = Ladybird::get_control_property(button, @"type"); [type isEqualToString:@"bookmark"]) {
-                auto bookmark_id = Ladybird::ns_string_to_string(Ladybird::get_control_property(button, @"id"));
+            if (auto* type = Waterduck::get_control_property(button, @"type"); [type isEqualToString:@"bookmark"]) {
+                auto bookmark_id = Waterduck::ns_string_to_string(Waterduck::get_control_property(button, @"id"));
                 auto activate_tab = ([event modifierFlags] & NSEventModifierFlagShift) ? Web::HTML::ActivateTab::No : Web::HTML::ActivateTab::Yes;
 
                 WebView::Application::the().open_bookmark_in_new_tab(bookmark_id, activate_tab);
@@ -384,21 +384,21 @@ static Optional<WebView::Menu&> find_bookmark_folder_by_id(WebView::Menu& menu, 
 - (NSMenu*)bookmarks_bar_context_menu
 {
     if (!_bookmarks_bar_context_menu)
-        _bookmarks_bar_context_menu = Ladybird::create_application_menu(WebView::Application::the().bookmarks_bar_context_menu());
+        _bookmarks_bar_context_menu = Waterduck::create_application_menu(WebView::Application::the().bookmarks_bar_context_menu());
     return _bookmarks_bar_context_menu;
 }
 
 - (NSMenu*)bookmark_context_menu
 {
     if (!_bookmark_context_menu)
-        _bookmark_context_menu = Ladybird::create_application_menu(WebView::Application::the().bookmark_context_menu());
+        _bookmark_context_menu = Waterduck::create_application_menu(WebView::Application::the().bookmark_context_menu());
     return _bookmark_context_menu;
 }
 
 - (NSMenu*)bookmark_folder_context_menu
 {
     if (!_bookmark_folder_context_menu)
-        _bookmark_folder_context_menu = Ladybird::create_application_menu(WebView::Application::the().bookmark_folder_context_menu());
+        _bookmark_folder_context_menu = Waterduck::create_application_menu(WebView::Application::the().bookmark_folder_context_menu());
     return _bookmark_folder_context_menu;
 }
 

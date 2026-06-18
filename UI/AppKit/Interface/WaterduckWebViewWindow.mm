@@ -1,22 +1,22 @@
 /*
- * Copyright (c) 2024, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2024, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#import <Interface/LadybirdWebView.h>
-#import <Interface/LadybirdWebViewWindow.h>
+#import <Interface/WaterduckWebView.h>
+#import <Interface/WaterduckWebViewWindow.h>
 
 #if !__has_feature(objc_arc)
 #    error "This project requires ARC"
 #endif
 
-@interface LadybirdWebViewWindow ()
+@interface WaterduckWebViewWindow ()
 @end
 
-@implementation LadybirdWebViewWindow
+@implementation WaterduckWebViewWindow
 
-- (instancetype)initWithWebView:(LadybirdWebView*)web_view
+- (instancetype)initWithWebView:(WaterduckWebView*)web_view
                      windowRect:(NSRect)window_rect
 {
     static constexpr auto style_mask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
@@ -30,7 +30,7 @@
         self.web_view = web_view;
 
         if (self.web_view == nil)
-            self.web_view = [[LadybirdWebView alloc] init:nil];
+            self.web_view = [[WaterduckWebView alloc] init:nil];
 
         [self.web_view setClipsToBounds:YES];
     }

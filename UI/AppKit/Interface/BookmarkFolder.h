@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */

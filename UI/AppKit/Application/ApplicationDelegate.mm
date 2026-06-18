@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #import <Application/ApplicationDelegate.h>
 #import <Interface/InfoBar.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/Menu.h>
 #import <Interface/Tab.h>
 #import <Interface/TabController.h>
@@ -138,7 +138,7 @@
 
 - (void)rebuildBookmarksMenu
 {
-    Ladybird::repopulate_application_menu(self.bookmarks_menu, WebView::Application::the().bookmarks_menu());
+    Waterduck::repopulate_application_menu(self.bookmarks_menu, WebView::Application::the().bookmarks_menu());
 
     for (TabController* controller in self.managed_tabs) {
         auto* tab = (Tab*)[controller window];
@@ -154,7 +154,7 @@
 
     auto message = MUST(String::formatted("DevTools is enabled on port {}", WebView::Application::browser_options().devtools_port));
 
-    [self.info_bar showWithMessage:Ladybird::string_to_ns_string(message)
+    [self.info_bar showWithMessage:Waterduck::string_to_ns_string(message)
                 dismissButtonTitle:@"Disable"
               dismissButtonClicked:^{
                   MUST(WebView::Application::the().toggle_devtools_enabled());
@@ -239,10 +239,10 @@
     auto* process_name = [[NSProcessInfo processInfo] processName];
     auto* submenu = [[NSMenu alloc] initWithTitle:process_name];
 
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().open_about_page_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().open_about_page_action())];
     [submenu addItem:[NSMenuItem separatorItem]];
 
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().open_settings_page_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().open_settings_page_action())];
     [submenu addItem:[NSMenuItem separatorItem]];
 
     [submenu addItem:[[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"Hide %@", process_name]
@@ -295,12 +295,12 @@
                                          keyEquivalent:@"y"]];
     [submenu addItem:[NSMenuItem separatorItem]];
 
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().cut_selection_action())];
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().copy_selection_action())];
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().paste_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().cut_selection_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().copy_selection_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().paste_action())];
     [submenu addItem:[NSMenuItem separatorItem]];
 
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().select_all_action())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().select_all_action())];
     [submenu addItem:[NSMenuItem separatorItem]];
 
     [submenu addItem:[[NSMenuItem alloc] initWithTitle:@"Find..."
@@ -325,11 +325,11 @@
     auto* menu = [[NSMenuItem alloc] init];
     auto* submenu = [[NSMenu alloc] initWithTitle:@"View"];
 
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().zoom_menu())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().zoom_menu())];
     [submenu addItem:[NSMenuItem separatorItem]];
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().color_scheme_menu())];
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().contrast_menu())];
-    [submenu addItem:Ladybird::create_application_menu_item(WebView::Application::the().motion_menu())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().color_scheme_menu())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().contrast_menu())];
+    [submenu addItem:Waterduck::create_application_menu_item(WebView::Application::the().motion_menu())];
     [submenu addItem:[NSMenuItem separatorItem]];
 
     [menu setSubmenu:submenu];
@@ -338,24 +338,24 @@
 
 - (NSMenuItem*)createHistoryMenu
 {
-    return Ladybird::create_application_menu_item(WebView::Application::the().history_menu());
+    return Waterduck::create_application_menu_item(WebView::Application::the().history_menu());
 }
 
 - (NSMenuItem*)createBookmarksMenu
 {
-    auto* menu = Ladybird::create_application_menu_item(WebView::Application::the().bookmarks_menu());
+    auto* menu = Waterduck::create_application_menu_item(WebView::Application::the().bookmarks_menu());
     self.bookmarks_menu = [menu submenu];
     return menu;
 }
 
 - (NSMenuItem*)createInspectMenu
 {
-    return Ladybird::create_application_menu_item(WebView::Application::the().inspect_menu());
+    return Waterduck::create_application_menu_item(WebView::Application::the().inspect_menu());
 }
 
 - (NSMenuItem*)createDebugMenu
 {
-    return Ladybird::create_application_menu_item(WebView::Application::the().debug_menu());
+    return Waterduck::create_application_menu_item(WebView::Application::the().debug_menu());
 }
 
 - (NSMenuItem*)createWindowMenu

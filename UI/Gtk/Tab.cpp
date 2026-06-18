@@ -81,7 +81,7 @@ Tab::Tab(BrowserWindow& window, WebView::WebContentClient& parent_client, u64 pa
 Tab::Tab(BrowserWindow& window, RefPtr<WebView::WebContentClient> parent_client, size_t page_index)
     : m_window(window)
 {
-    m_web_view = ladybird_web_view_new();
+    m_web_view = waterduck_web_view_new();
     gtk_widget_set_vexpand(GTK_WIDGET(m_web_view), TRUE);
     gtk_widget_set_hexpand(GTK_WIDGET(m_web_view), TRUE);
     m_view = adopt_own(*new WebContentView(m_web_view, parent_client, page_index));

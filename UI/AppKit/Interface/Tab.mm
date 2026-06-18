@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2023-2026, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -16,7 +16,7 @@
 
 #import <Application/ApplicationDelegate.h>
 #import <Interface/BookmarksBar.h>
-#import <Interface/LadybirdWebView.h>
+#import <Interface/WaterduckWebView.h>
 #import <Interface/SearchPanel.h>
 #import <Interface/Tab.h>
 #import <Interface/TabController.h>
@@ -79,7 +79,7 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
     return image;
 }
 
-@interface Tab () <LadybirdWebViewObserver>
+@interface Tab () <WaterduckWebViewObserver>
 {
     BOOL m_loading;
     NSUInteger m_loading_spinner_frame;
@@ -106,7 +106,7 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
 
     dispatch_once(&token, ^{
         auto default_favicon_path = MUST(Core::Resource::load_from_uri("resource://icons/48x48/app-browser.png"sv));
-        auto* ns_default_favicon_path = Ladybird::string_to_ns_string(default_favicon_path->filesystem_path());
+        auto* ns_default_favicon_path = Waterduck::string_to_ns_string(default_favicon_path->filesystem_path());
 
         default_favicon = [[NSImage alloc] initWithContentsOfFile:ns_default_favicon_path];
     });
@@ -116,18 +116,18 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
 
 - (instancetype)init
 {
-    auto* web_view = [[LadybirdWebView alloc] init:self];
+    auto* web_view = [[WaterduckWebView alloc] init:self];
     return [self initWithWebView:web_view];
 }
 
 - (instancetype)initAsChild:(Tab*)parent
                   pageIndex:(u64)page_index
 {
-    auto* web_view = [[LadybirdWebView alloc] initAsChild:self parent:[parent web_view] pageIndex:page_index];
+    auto* web_view = [[WaterduckWebView alloc] initAsChild:self parent:[parent web_view] pageIndex:page_index];
     return [self initWithWebView:web_view];
 }
 
-- (instancetype)initWithWebView:(LadybirdWebView*)web_view
+- (instancetype)initWithWebView:(WaterduckWebView*)web_view
 {
     auto screen_rect = [[NSScreen mainScreen] frame];
     auto position_x = (NSWidth(screen_rect) - WINDOW_WIDTH) / 2;
@@ -219,8 +219,8 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
     if (!WebView::Application::settings().config_variable_as_bool(WebView::ConfigVariableID::ShowWebContentProcessIDInTabTitle))
         return self.title;
 
-    auto title = MUST(String::formatted("{} [{}]", Ladybird::ns_string_to_string(self.title), [[self web_view] view].client().pid()));
-    return Ladybird::string_to_ns_string(title);
+    auto title = MUST(String::formatted("{} [{}]", Waterduck::ns_string_to_string(self.title), [[self web_view] view].client().pid()));
+    return Waterduck::string_to_ns_string(title);
 }
 
 - (void)updateLoadingSpinner
@@ -347,7 +347,7 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
     VERIFY_NOT_REACHED();
 }
 
-#pragma mark - LadybirdWebViewObserver
+#pragma mark - WaterduckWebViewObserver
 
 - (String const&)onCreateNewTab:(Optional<URL::URL> const&)url
                     activateTab:(Web::HTML::ActivateTab)activate_tab
@@ -379,7 +379,7 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
 
 - (void)onLoadStart:(URL::URL const&)url isRedirect:(BOOL)is_redirect
 {
-    self.title = Ladybird::string_to_ns_string(url.serialize());
+    self.title = Waterduck::string_to_ns_string(url.serialize());
     self.favicon = [Tab defaultFavicon];
     [self setTabLoading:YES];
     [self updateTabTitleAndFavicon];
@@ -401,13 +401,13 @@ static NSImage* tab_loading_spinner_icon(NSUInteger frame)
 
 - (void)onTitleChange:(Utf16String const&)title
 {
-    self.title = Ladybird::utf16_string_to_ns_string(title);
+    self.title = Waterduck::utf16_string_to_ns_string(title);
     [self updateTabTitleAndFavicon];
 }
 
 - (void)onFaviconChange:(Gfx::Bitmap const&)bitmap
 {
-    auto* favicon = Ladybird::gfx_bitmap_to_ns_image(bitmap);
+    auto* favicon = Waterduck::gfx_bitmap_to_ns_image(bitmap);
     [favicon setResizingMode:NSImageResizingModeStretch];
     self.favicon = favicon;
     [self updateTabTitleAndFavicon];

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Tim Flynn <trflynn89@ladybird.org>
+ * Copyright (c) 2025, Tim Flynn <trflynn89@waterduck.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -353,8 +353,8 @@ static CGFloat autocomplete_visible_width(NSView* view)
 
     for (auto const& suggestion : m_suggestions) {
         if (suggestion.favicon_base64_png.has_value()) {
-            auto* suggestion_text = Ladybird::string_to_ns_string(suggestion.text);
-            if (auto* favicon = Ladybird::image_from_base64_png(*suggestion.favicon_base64_png, NSMakeSize(CELL_ICON_SIZE, CELL_ICON_SIZE)); favicon != nil)
+            auto* suggestion_text = Waterduck::string_to_ns_string(suggestion.text);
+            if (auto* favicon = Waterduck::image_from_base64_png(*suggestion.favicon_base64_png, NSMakeSize(CELL_ICON_SIZE, CELL_ICON_SIZE)); favicon != nil)
                 [self.suggestion_icons setObject:favicon forKey:suggestion_text];
         }
     }
@@ -658,7 +658,7 @@ static CGFloat autocomplete_visible_width(NSView* view)
             [view setIdentifier:AUTOCOMPLETE_SECTION_HEADER_IDENTIFIER];
         }
 
-        auto* header_text = Ladybird::string_to_ns_string(row_model.text);
+        auto* header_text = Waterduck::string_to_ns_string(row_model.text);
         auto header_height = autocomplete_text_field_height(autocomplete_section_header_font());
         [view setFrame:NSMakeRect(0, 0, visible_width, [self tableView:table_view heightOfRow:row])];
         [view.text_field setStringValue:header_text];
@@ -704,9 +704,9 @@ static CGFloat autocomplete_visible_width(NSView* view)
     }
 
     auto const& suggestion = m_suggestions[row_model.suggestion_index];
-    auto* suggestion_text = Ladybird::string_to_ns_string(suggestion.text);
-    auto* title_text = suggestion.title.has_value() ? Ladybird::string_to_ns_string(*suggestion.title) : nil;
-    auto* secondary_text = suggestion.subtitle.has_value() ? Ladybird::string_to_ns_string(*suggestion.subtitle) : suggestion_text;
+    auto* suggestion_text = Waterduck::string_to_ns_string(suggestion.text);
+    auto* title_text = suggestion.title.has_value() ? Waterduck::string_to_ns_string(*suggestion.title) : nil;
+    auto* secondary_text = suggestion.subtitle.has_value() ? Waterduck::string_to_ns_string(*suggestion.subtitle) : suggestion_text;
     auto* favicon = [self.suggestion_icons objectForKey:suggestion_text];
     auto* icon = suggestion.source == WebView::AutocompleteSuggestionSource::LiteralURL
         ? literal_url_suggestion_icon()

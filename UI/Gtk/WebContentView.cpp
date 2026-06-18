@@ -30,7 +30,7 @@ static GdkRGBA to_gdk_rgba(Gfx::Color color)
     };
 }
 
-WebContentView::WebContentView(LadybirdWebView* widget, RefPtr<WebView::WebContentClient> parent_client, size_t page_index)
+WebContentView::WebContentView(WaterduckWebView* widget, RefPtr<WebView::WebContentClient> parent_client, size_t page_index)
     : m_widget(widget)
 {
     m_client_state.client = parent_client;
@@ -40,7 +40,7 @@ WebContentView::WebContentView(LadybirdWebView* widget, RefPtr<WebView::WebConte
     set_page_background_color_to_system_canvas(adw_style_manager_get_dark(adw_style_manager_get_default()));
 
     // Store ourselves in the GObject widget
-    ladybird_web_view_set_impl(widget, this);
+    waterduck_web_view_set_impl(widget, this);
 
     initialize_client((parent_client == nullptr) ? CreateNewClient::Yes : CreateNewClient::No);
 
@@ -66,7 +66,7 @@ WebContentView::~WebContentView()
 {
     g_signal_handlers_disconnect_by_data(adw_style_manager_get_default(), this);
     if (m_widget)
-        ladybird_web_view_set_impl(m_widget, nullptr);
+        waterduck_web_view_set_impl(m_widget, nullptr);
 }
 
 void WebContentView::enqueue_native_event(Web::MouseEvent::Type type, double x, double y, unsigned button, GdkModifierType state, int click_count)
